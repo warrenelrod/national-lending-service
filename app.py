@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 
 import smtplib
@@ -9,8 +10,8 @@ from email.message import EmailMessage
 if "submitted" not in st.session_state:
     st.session_state.submitted = False
 
-if "scroll_counter" not in st.session_state:
-    st.session_state.scroll_counter = 0
+if "scroll_nonce" not in st.session_state:
+    st.session_state.scroll_nonce = 0
 
 
 # -----------------------------
@@ -208,7 +209,7 @@ with st.form("mortgage_calculator"):
 
     if submitted_calc:
         st.session_state.submitted = True
-        st.session_state.scroll_counter += 1
+        st.session_state.scroll_nonce += 1
 
 
 credit_mapping = {
@@ -245,32 +246,39 @@ estimated_total_payment = monthly_pi + monthly_pmi
 
 
 
-import streamlit.components.v1 as components
-
 if st.session_state.submitted:
     st.subheader("Estimated Monthly Payment", anchor="results-subheader")
 
-    components.html(
+    st.iframe(
         f"""
         <script>
-            const scrollCounter = {st.session_state.scroll_counter};
+            const nonce = {st.session_state.scroll_nonce};
 
             setTimeout(() => {{
-                const anchor = window.parent.document.querySelector("a[href='#results-subheader']");
+                const anchor = window.parent.document.querySelector(
+                    "a[href='#results-subheader']"
+                );
 
                 if (anchor) {{
-                    const heading = anchor.closest("h2, h3, div") || anchor.parentElement;
-                    const y = heading.getBoundingClientRect().top + window.parent.scrollY - 80;
+                    const heading =
+                        anchor.closest("h2, h3") ||
+                        anchor.parentElement;
+
+                    const offset = 90;
+                    const y =
+                        heading.getBoundingClientRect().top +
+                        window.parent.scrollY -
+                        offset;
 
                     window.parent.scrollTo({{
                         top: y,
                         behavior: "smooth"
                     }});
                 }}
-            }}, 100);
+            }}, 150);
         </script>
         """,
-        height=0,
+        height=1,
     )
 
     metric_cols = st.columns(3)
@@ -281,10 +289,7 @@ if st.session_state.submitted:
     metric_cols_2 = st.columns(3)
     metric_cols_2[0].metric("Principal & interest", format_currency(monthly_pi))
     metric_cols_2[1].metric("Estimated PMI / MI", format_currency(monthly_pmi))
-    metric_cols_2[2].metric(
-        "Estimated total monthly payment",
-        format_currency(estimated_total_payment),
-    )
+    metric_cols_2[2].metric("Estimated total monthly payment", format_currency(estimated_total_payment))
 
 
 
