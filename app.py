@@ -41,6 +41,49 @@ def calculate_monthly_pi(loan_amount: float, annual_rate: float, years: int) -> 
     return payment
 
 
+def estimate_interest_rate_from_pi(
+    loan_amount: float,
+    monthly_pi: float,
+    years: int,
+    low_rate: float = 0.0,
+    high_rate: float = 20.0,
+    tolerance: float = 0.00001,
+    max_iterations: int = 100
+) -> float:
+    """
+    Estimate annual interest rate from loan amount, monthly P&I payment, and term.
+    Uses binary search because the mortgage formula is hard to rearrange directly.
+    Returns annual interest rate as a percentage.
+    """
+
+    if loan_amount <= 0 or monthly_pi <= 0 or years <= 0:
+        return 0.0
+
+    number_payments = years * 12
+
+    # If payment is basically a 0% interest payment
+    zero_interest_payment = loan_amount / number_payments
+    if monthly_pi <= zero_interest_payment:
+        return 0.0
+
+    low = low_rate
+    high = high_rate
+
+    for _ in range(max_iterations):
+        mid = (low + high) / 2
+        estimated_payment = calculate_monthly_pi(loan_amount, mid, years)
+
+        if abs(estimated_payment - monthly_pi) < tolerance:
+            return mid
+
+        if estimated_payment < monthly_pi:
+            low = mid
+        else:
+            high = mid
+
+    return (low + high) / 2
+
+
 def format_currency(value: float) -> str:
     return f"${value:,.2f}"
 
@@ -129,14 +172,6 @@ with st.form("mortgage_calculator"):
             step=0.5
         )
 
-        annual_rate = st.number_input(
-            "Interest rate %",
-            min_value=0.0,
-            value=6.75,
-            step=0.125,
-            format="%.3f"
-        )
-
         loan_term_years = st.selectbox(
             "Loan term",
             options=[30, 25, 20, 15, 10],
@@ -144,30 +179,6 @@ with st.form("mortgage_calculator"):
         )
 
     with col2:
-        annual_property_tax = st.number_input(
-            "Estimated annual property taxes",
-            min_value=0.0,
-            value=5500.0,
-            step=250.0,
-            format="%.2f"
-        )
-
-        annual_homeowners_insurance = st.number_input(
-            "Estimated annual homeowners insurance",
-            min_value=0.0,
-            value=3500.0,
-            step=250.0,
-            format="%.2f"
-        )
-
-        monthly_hoa = st.number_input(
-            "Monthly HOA / condo fee",
-            min_value=0.0,
-            value=0.0,
-            step=25.0,
-            format="%.2f"
-        )
-
         monthly_pmi = st.number_input(
             "Estimated monthly PMI / MI",
             min_value=0.0,
@@ -176,21 +187,47 @@ with st.form("mortgage_calculator"):
             format="%.2f"
         )
 
+        credit_range = st.selectbox(
+            "Estimated credit score range",
+            options=[
+                "760+",
+                "720-759",
+                "680-719",
+                "640-679",
+                "600-639",
+                "Below 600",
+            ]
+        )
+
     submitted_calc = st.form_submit_button("Calculate payment")
+
+credit_mapping = {
+    "760+": 0.0632,
+    "720-759": 0.0636,
+    "680-719": 0.0641,
+    "640-679": 0.0646,
+    "600-639": 0.0650,
+    "Below 600": 0.0654,
+}
+
+annual_rate = credit_mapping[credit_range]
 
 
 down_payment_amount = purchase_price * down_payment_percent / 100
 loan_amount = max(purchase_price - down_payment_amount, 0)
 
 monthly_pi = calculate_monthly_pi(loan_amount, annual_rate, loan_term_years)
-monthly_tax = annual_property_tax / 12
-monthly_insurance = annual_homeowners_insurance / 12
-estimated_total_payment = monthly_pi + monthly_tax + monthly_insurance + monthly_hoa + monthly_pmi
+# monthly_tax = annual_property_tax / 12
+# monthly_insurance = annual_homeowners_insurance / 12
+# estimated_total_payment = monthly_pi + monthly_tax + monthly_insurance + monthly_hoa + monthly_pmi
+estimated_total_payment = monthly_pi + monthly_pmi
+
 
 st.subheader("Estimated Monthly Payment")
 
 metric_cols = st.columns(3)
 metric_cols[0].metric("Loan amount", format_currency(loan_amount))
+# metric_cols[1].metric("Estimated interest rate", f"{estimated_rate:.3f}%")
 metric_cols[1].metric("Principal & interest", format_currency(monthly_pi))
 metric_cols[2].metric("Estimated total", format_currency(estimated_total_payment))
 
@@ -199,9 +236,10 @@ with st.expander("Payment breakdown"):
     st.write(f"**Down payment:** {format_currency(down_payment_amount)}")
     st.write(f"**Loan amount:** {format_currency(loan_amount)}")
     st.write(f"**Principal & interest:** {format_currency(monthly_pi)}")
-    st.write(f"**Property taxes:** {format_currency(monthly_tax)} / month")
-    st.write(f"**Homeowners insurance:** {format_currency(monthly_insurance)} / month")
-    st.write(f"**HOA / condo fee:** {format_currency(monthly_hoa)} / month")
+    st.write(f"**Estimated Interest Rate:** {annual_rate}")
+    # st.write(f"**Property taxes:** {format_currency(monthly_tax)} / month")
+    # st.write(f"**Homeowners insurance:** {format_currency(monthly_insurance)} / month")
+    # st.write(f"**HOA / condo fee:** {format_currency(monthly_hoa)} / month")
     st.write(f"**PMI / MI:** {format_currency(monthly_pmi)} / month")
     st.write(f"**Estimated total monthly payment:** {format_currency(estimated_total_payment)}")
 
@@ -332,8 +370,6 @@ Interest rate used: {annual_rate:.3f}%
 Loan term: {loan_term_years} years
 Principal & interest: {format_currency(monthly_pi)}
 Estimated taxes: {format_currency(monthly_tax)} / month
-Estimated insurance: {format_currency(monthly_insurance)} / month
-HOA: {format_currency(monthly_hoa)} / month
 PMI / MI: {format_currency(monthly_pmi)} / month
 Estimated total monthly payment: {format_currency(estimated_total_payment)}
 
