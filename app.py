@@ -86,8 +86,8 @@ def send_email(subject: str, body: str, reply_to: str | None = None) -> None:
 # -----------------------------
 MLO_NAME = "Your MLO Name"
 COMPANY_NAME = "Your Mortgage Company"
-NMLS_ID = "NMLS #XXXXXXX"
-FL_LICENSE = "Florida License #XXXXXXX"
+NMLS_ID = "NMLS #XXXXXXXX"
+FL_LICENSE = "Florida License #XXXXXXXX"
 SERVICE_AREA = "Pinellas County and surrounding Florida communities"
 
 
