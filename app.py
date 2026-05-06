@@ -255,7 +255,7 @@ estimated_total_payment = monthly_pi + monthly_pmi
 
 
 if st.session_state.submitted:
-    # st.session_state.submitted = False
+    if is_mobile: st.session_state.submitted = False
 
     target = "results-scroll-target"
 
