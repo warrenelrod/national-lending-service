@@ -202,12 +202,12 @@ with st.form("mortgage_calculator"):
     submitted_calc = st.form_submit_button("Calculate payment")
 
 credit_mapping = {
-    "760+": 0.0632,
-    "720-759": 0.0636,
-    "680-719": 0.0641,
-    "640-679": 0.0646,
-    "600-639": 0.0650,
-    "Below 600": 0.0654,
+    "760+": 6.32,
+    "720-759": 6.36,
+    "680-719": 6.41,
+    "640-679": 6.46,
+    "600-639": 6.50,
+    "Below 600": 6.54,
 }
 
 annual_rate = credit_mapping[credit_range]
@@ -229,7 +229,8 @@ metric_cols = st.columns(3)
 metric_cols[0].metric("Loan amount", format_currency(loan_amount))
 # metric_cols[1].metric("Estimated interest rate", f"{estimated_rate:.3f}%")
 metric_cols[1].metric("Principal & interest", format_currency(monthly_pi))
-metric_cols[2].metric("Estimated total", format_currency(estimated_total_payment))
+# metric_cols[2].metric("Estimated total", format_currency(estimated_total_payment))
+metric_cols[2].metric("Estimated Interest Rate", f"{annual_rate} %")
 
 with st.expander("Payment breakdown"):
     st.write(f"**Purchase price:** {format_currency(purchase_price)}")
