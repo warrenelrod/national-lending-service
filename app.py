@@ -243,18 +243,30 @@ estimated_total_payment = monthly_pi + monthly_pmi
 
 # 3. Target subheader with a unique anchor
 if st.session_state.submitted:
+    st.subheader("Estimated Monthly Payment", anchor="results-subheader")
 
-    # Use JavaScript to programmatically scroll down to the element
-    js = """
-    <script>
-        var subheader = window.parent.document.querySelector("a[href='#results-subheader']");
-        if (subheader) {
-            subheader.scrollIntoView({behavior: 'smooth', block: 'start'});
-        }
-    </script>
-    """
-    st.iframe(js, height=1)
+    components.html(
+        f"""
+        <script>
+            const scrollCounter = {st.session_state.scroll_counter};
 
+            setTimeout(() => {{
+                const anchor = window.parent.document.querySelector("a[href='#results-subheader']");
+
+                if (anchor) {{
+                    const heading = anchor.closest("h2, h3, div") || anchor.parentElement;
+                    const y = heading.getBoundingClientRect().top + window.parent.scrollY - 80;
+
+                    window.parent.scrollTo({{
+                        top: y,
+                        behavior: "smooth"
+                    }});
+                }}
+            }}, 100);
+        </script>
+        """,
+        height=0,
+    )
 
     metric_cols = st.columns(3)
     metric_cols[0].metric("Loan amount", format_currency(loan_amount))
@@ -264,7 +276,10 @@ if st.session_state.submitted:
     metric_cols_2 = st.columns(3)
     metric_cols_2[0].metric("Principal & interest", format_currency(monthly_pi))
     metric_cols_2[1].metric("Estimated PMI / MI", format_currency(monthly_pmi))
-    metric_cols_2[2].metric("Estimated total monthly payment", format_currency(estimated_total_payment))
+    metric_cols_2[2].metric(
+        "Estimated total monthly payment",
+        format_currency(estimated_total_payment),
+    )
 
 
 
