@@ -50,7 +50,7 @@ def scroll_to(element_id):
     <script>
         setTimeout(function() {{
             const doc = window.parent.document;
-            const target = doc.getElementById("{element}");
+            const target = doc.getElementById("{element_id}");
 
             if (target) {{
                 target.scrollIntoView({{
