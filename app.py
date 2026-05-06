@@ -12,7 +12,12 @@ import math
 st.set_page_config(
     page_title="Pinellas Mortgage Calculator",
     page_icon="🏠",
-    layout="centered"
+    layout="centered",
+    menu_items={
+        'Get Help': None,
+        'Report a bug': None,
+        'About': None,
+    }
 )
 
 
