@@ -166,30 +166,23 @@ with st.form("mortgage_calculator"):
             min_value=0.0,
             value=450000.0,
             step=5000.0,
-            format="%.2f"
+            format="%.2f",
         )
 
-        down_payment_percent = st.slider(
+        down_payment_percent = st.number_input(
             "Down payment %",
             min_value=0.0,
             max_value=100.0,
             value=10.0,
-            step=0.5
-        )
-
-        loan_term_years = st.selectbox(
-            "Loan term",
-            options=[30, 25, 20, 15, 10],
-            index=0
+            step=0.5,
+            format="%.2f",
         )
 
     with col2:
-        monthly_pmi = st.number_input(
-            "Estimated monthly PMI / MI",
-            min_value=0.0,
-            value=150.0,
-            step=25.0,
-            format="%.2f"
+        loan_term_years = st.selectbox(
+            "Loan term",
+            options=[30, 15],
+            index=0,
         )
 
         credit_range = st.selectbox(
@@ -217,9 +210,10 @@ credit_mapping = {
 
 annual_rate = credit_mapping[credit_range]
 
-
 down_payment_amount = purchase_price * down_payment_percent / 100
 loan_amount = max(purchase_price - down_payment_amount, 0)
+
+monthly_pmi = (loan_amount * 0.008) / 12
 
 monthly_pi = calculate_monthly_pi(loan_amount, annual_rate, loan_term_years)
 # monthly_tax = annual_property_tax / 12
@@ -232,22 +226,25 @@ st.subheader("Estimated Monthly Payment")
 
 metric_cols = st.columns(3)
 metric_cols[0].metric("Loan amount", format_currency(loan_amount))
-# metric_cols[1].metric("Estimated interest rate", f"{estimated_rate:.3f}%")
-metric_cols[1].metric("Principal & interest", format_currency(monthly_pi))
-# metric_cols[2].metric("Estimated total", format_currency(estimated_total_payment))
+metric_cols[1].metric("Down payment", format_currency(down_payment_amount))
 metric_cols[2].metric("Estimated Interest Rate", f"{annual_rate} %")
 
-with st.expander("Payment breakdown"):
-    st.write(f"**Purchase price:** {format_currency(purchase_price)}")
-    st.write(f"**Down payment:** {format_currency(down_payment_amount)}")
-    st.write(f"**Loan amount:** {format_currency(loan_amount)}")
-    st.write(f"**Principal & interest:** {format_currency(monthly_pi)}")
-    st.write(f"**Estimated Interest Rate:** {annual_rate}")
-    # st.write(f"**Property taxes:** {format_currency(monthly_tax)} / month")
-    # st.write(f"**Homeowners insurance:** {format_currency(monthly_insurance)} / month")
-    # st.write(f"**HOA / condo fee:** {format_currency(monthly_hoa)} / month")
-    st.write(f"**PMI / MI:** {format_currency(monthly_pmi)} / month")
-    st.write(f"**Estimated total monthly payment:** {format_currency(estimated_total_payment)}")
+metric_cols_2 = st.columns(3)
+metric_cols_2[0].metric("Principal & interest", format_currency(monthly_pi))
+metric_cols_2[1].metric("Estimated PMI / MI", format_currency(monthly_pmi))
+metric_cols_2[2].metric("Estimated total monthly payment", format_currency(estimated_total_payment))
+
+# with st.expander("Payment breakdown"):
+#     st.write(f"**Purchase price:** {format_currency(purchase_price)}")
+#     st.write(f"**Down payment:** {format_currency(down_payment_amount)}")
+#     st.write(f"**Loan amount:** {format_currency(loan_amount)}")
+#     st.write(f"**Principal & interest:** {format_currency(monthly_pi)}")
+#     st.write(f"**Estimated Interest Rate:** {annual_rate}")
+#     # st.write(f"**Property taxes:** {format_currency(monthly_tax)} / month")
+#     # st.write(f"**Homeowners insurance:** {format_currency(monthly_insurance)} / month")
+#     # st.write(f"**HOA / condo fee:** {format_currency(monthly_hoa)} / month")
+#     st.write(f"**PMI / MI:** {format_currency(monthly_pmi)} / month")
+#     st.write(f"**Estimated total monthly payment:** {format_currency(estimated_total_payment)}")
 
 
 # -----------------------------
