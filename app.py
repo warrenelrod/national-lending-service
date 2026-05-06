@@ -244,42 +244,16 @@ estimated_total_payment = monthly_pi + monthly_pmi
 # 3. Target subheader with a unique anchor
 if st.session_state.submitted:
 
-    import streamlit.components.v1 as components
-    st.subheader("Estimated Monthly Payment", anchor="results-subheader")
-
-    components.html(
-        f"""
-        <script>
-            const scrollCounter = {st.session_state.scroll_counter};
-
-            setTimeout(() => {{
-                const anchor = window.parent.document.querySelector("a[href='#results-subheader']");
-
-                if (anchor) {{
-                    const heading = anchor.closest("h2, h3, div") || anchor.parentElement;
-                    const y = heading.getBoundingClientRect().top + window.parent.scrollY - 80;
-
-                    window.parent.scrollTo({{
-                        top: y,
-                        behavior: "smooth"
-                    }});
-                }}
-            }}, 100);
-        </script>
-        """,
-        height=0,
-    )
-
-    # # Use JavaScript to programmatically scroll down to the element
-    # js = """
-    # <script>
-    #     var subheader = window.parent.document.querySelector("a[href='#results-subheader']");
-    #     if (subheader) {
-    #         subheader.scrollIntoView({behavior: 'smooth', block: 'start'});
-    #     }
-    # </script>
-    # """
-    # st.iframe(js, height=1)
+    # Use JavaScript to programmatically scroll down to the element
+    js = """
+    <script>
+        var subheader = window.parent.document.querySelector("a[href='#results-subheader']");
+        if (subheader) {
+            subheader.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+    </script>
+    """
+    st.iframe(js, height=1)
 
 
     metric_cols = st.columns(3)
