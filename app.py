@@ -136,6 +136,38 @@ NMLS_ID = "NMLS #XXXXXXX"
 FL_LICENSE = "Florida License #XXXXXXX"
 SERVICE_AREA = "Pinellas County and surrounding Florida communities"
 
+is_mobile = is_mobile_user()
+
+if is_mobile:
+    st.markdown(
+        """
+        <style>
+        /* Keep the down-payment percent + amount row side-by-side on mobile */
+        div[data-testid="stHorizontalBlock"]:has(#down-payment-mobile-keep) {
+            flex-wrap: nowrap;
+            gap: 0.5rem;
+        }
+
+        div[data-testid="stHorizontalBlock"]:has(#down-payment-mobile-keep) > div:first-child {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        div[data-testid="stHorizontalBlock"]:has(#down-payment-mobile-keep) > div:last-child {
+            flex: 0 0 120px;
+            min-width: 100px;
+        }
+
+        @media (max-width: 480px) {
+            div[data-testid="stHorizontalBlock"]:has(#down-payment-mobile-keep) > div:last-child {
+                flex-basis: 105px;
+                min-width: 95px;
+            }
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Header
@@ -153,8 +185,6 @@ st.info(
 # ---------------------------------------------------------------------------------------------------------------------
 # Calculator
 
-is_mobile = is_mobile_user()
-
 st.header("Mortgage Payment Estimate")
 
 col1, col2 = st.columns(2)
@@ -167,6 +197,9 @@ with col1:
         step=5000.0,
         format="%.2f",
     )
+
+    if is_mobile:
+        st.markdown('<span id="down-payment-mobile-keep"></span>', unsafe_allow_html=True)
 
     down_col1, down_col2 = st.columns([2, 1])
 
@@ -191,6 +224,7 @@ with col1:
                 height: 72px;
                 padding-bottom: 0.35rem;
                 font-weight: 600;
+                white-space: nowrap;
             ">
                 {format_currency(down_payment_amount_preview)}
             </div>
