@@ -6,6 +6,13 @@ import streamlit as st
 from email.message import EmailMessage
 
 # -----------------------------
+# Session state
+# -----------------------------
+if "submitted" not in st.session_state:
+    st.session_state.submitted = False
+
+
+# -----------------------------
 # Page config
 # -----------------------------
 st.set_page_config(
@@ -23,6 +30,21 @@ st.set_page_config(
 # -----------------------------
 # Helper functions
 # -----------------------------
+def is_mobile_user() -> bool:
+    user_agent = st.context.headers.get("user-agent", "").lower()
+
+    mobile_keywords = [
+        "iphone",
+        "android",
+        "ipad",
+        "mobile",
+        "blackberry",
+        "windows phone",
+    ]
+
+    return any(keyword in user_agent for keyword in mobile_keywords)
+
+
 def calculate_monthly_pi(loan_amount: float, annual_rate: float, years: int) -> float:
     """
     Principal + interest monthly payment.
@@ -43,49 +65,6 @@ def calculate_monthly_pi(loan_amount: float, annual_rate: float, years: int) -> 
     )
 
     return payment
-
-
-def estimate_interest_rate_from_pi(
-    loan_amount: float,
-    monthly_pi: float,
-    years: int,
-    low_rate: float = 0.0,
-    high_rate: float = 20.0,
-    tolerance: float = 0.00001,
-    max_iterations: int = 100
-) -> float:
-    """
-    Estimate annual interest rate from loan amount, monthly P&I payment, and term.
-    Uses binary search because the mortgage formula is hard to rearrange directly.
-    Returns annual interest rate as a percentage.
-    """
-
-    if loan_amount <= 0 or monthly_pi <= 0 or years <= 0:
-        return 0.0
-
-    number_payments = years * 12
-
-    # If payment is basically a 0% interest payment
-    zero_interest_payment = loan_amount / number_payments
-    if monthly_pi <= zero_interest_payment:
-        return 0.0
-
-    low = low_rate
-    high = high_rate
-
-    for _ in range(max_iterations):
-        mid = (low + high) / 2
-        estimated_payment = calculate_monthly_pi(loan_amount, mid, years)
-
-        if abs(estimated_payment - monthly_pi) < tolerance:
-            return mid
-
-        if estimated_payment < monthly_pi:
-            low = mid
-        else:
-            high = mid
-
-    return (low + high) / 2
 
 
 def format_currency(value: float) -> str:
@@ -138,9 +117,9 @@ FL_LICENSE = "Florida License #XXXXXXX"
 SERVICE_AREA = "Pinellas County and surrounding Florida communities"
 
 
-# -----------------------------
+# ---------------------------------------------------------------------------------------------------------------------
 # Header
-# -----------------------------
+
 st.title("🏠 Pinellas Mortgage Calculator")
 st.caption(f"{COMPANY_NAME} | {MLO_NAME} | {NMLS_ID} | {FL_LICENSE}")
 
@@ -151,14 +130,9 @@ st.info(
 )
 
 
-# 1. Initialize session state to track if the form was submitted
-if "submitted" not in st.session_state:
-    st.session_state.submitted = False
-
-
-# -----------------------------
+# ---------------------------------------------------------------------------------------------------------------------
 # Calculator
-# -----------------------------
+
 st.header("Mortgage Payment Estimate")
 
 with st.form("mortgage_calculator"):
@@ -278,30 +252,9 @@ if st.session_state.submitted:
     metric_cols_2[2].metric("Estimated total monthly payment", format_currency(estimated_total_payment))
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# -----------------------------
+# ---------------------------------------------------------------------------------------------------------------------
 # Lead submission form
-# -----------------------------
+
 st.divider()
 st.header("Request a Mortgage Consultation")
 
@@ -310,7 +263,7 @@ st.write(
     "will follow up."
 )
 
-with st.form("lead_form", clear_on_submit=False):
+with st.form("lead_form", clear_on_submit=True):
     lead_col1, lead_col2 = st.columns(2)
 
     with lead_col1:
@@ -424,7 +377,6 @@ Estimated loan amount: {format_currency(loan_amount)}
 Interest rate used: {annual_rate:.3f}%
 Loan term: {loan_term_years} years
 Principal & interest: {format_currency(monthly_pi)}
-Estimated taxes: {format_currency(monthly_tax)} / month
 PMI / MI: {format_currency(monthly_pmi)} / month
 Estimated total monthly payment: {format_currency(estimated_total_payment)}
 
