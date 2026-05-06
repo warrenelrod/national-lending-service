@@ -45,6 +45,26 @@ def is_mobile_user() -> bool:
     return any(keyword in user_agent for keyword in mobile_keywords)
 
 
+def scroll_to(element):
+    js = f"""
+    <script>
+        setTimeout(function() {{
+            const doc = window.parent.document;
+            const target = doc.getElementById("{element}");
+
+            if (target) {{
+                target.scrollIntoView({{
+                    behavior: "smooth",
+                    block: "start"
+                }});
+            }}
+        }}, 100);
+    </script>
+    """
+
+    st.iframe(js, height=1)
+
+
 def calculate_monthly_pi(loan_amount: float, annual_rate: float, years: int) -> float:
     """
     Principal + interest monthly payment.
@@ -135,18 +155,20 @@ st.info(
 
 st.header("Mortgage Payment Estimate")
 
-with st.form("mortgage_calculator"):
-    col1, col2 = st.columns(2)
+col1, col2 = st.columns(2)
 
-    with col1:
-        purchase_price = st.number_input(
-            "Purchase price",
-            min_value=0.0,
-            value=450000.0,
-            step=5000.0,
-            format="%.2f",
-        )
+with col1:
+    purchase_price = st.number_input(
+        "Purchase price",
+        min_value=0.0,
+        value=450000.0,
+        step=5000.0,
+        format="%.2f",
+    )
 
+    down_col1, down_col2 = st.columns([2, 1])
+
+    with down_col1:
         down_payment_percent = st.number_input(
             "Down payment %",
             min_value=0.0,
@@ -156,29 +178,47 @@ with st.form("mortgage_calculator"):
             format="%.2f",
         )
 
-    with col2:
-        loan_term_years = st.selectbox(
-            "Loan term",
-            options=[30, 15],
-            index=0,
+    with down_col2:
+        down_payment_amount_preview = purchase_price * down_payment_percent / 100
+
+        st.markdown(
+            f"""
+            <div style="
+                display: flex;
+                align-items: flex-end;
+                height: 72px;
+                padding-bottom: 0.35rem;
+                font-weight: 600;
+            ">
+                {format_currency(down_payment_amount_preview)}
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
 
-        credit_range = st.selectbox(
-            "Estimated credit score range",
-            options=[
-                "760+",
-                "720-759",
-                "680-719",
-                "640-679",
-                "600-639",
-                "Below 600",
-            ]
-        )
+with col2:
+    loan_term_years = st.selectbox(
+        "Loan term",
+        options=[30, 15],
+        index=0,
+    )
 
-    submitted_calc = st.form_submit_button("Calculate payment")
+    credit_range = st.selectbox(
+        "Estimated credit score range",
+        options=[
+            "760+",
+            "720-759",
+            "680-719",
+            "640-679",
+            "600-639",
+            "Below 600",
+        ],
+    )
 
-    if submitted_calc:
-        st.session_state.submitted = True
+submitted_calc = st.button("Calculate payment")
+
+if submitted_calc:
+    st.session_state.submitted = True
 
 
 credit_mapping = {
@@ -211,35 +251,23 @@ monthly_pi = calculate_monthly_pi(loan_amount, annual_rate, loan_term_years)
 estimated_total_payment = monthly_pi + monthly_pmi
 
 
+# is_mobile = is_mobile_user()
+
+
 if st.session_state.submitted:
     st.session_state.submitted = False
 
+    target = "results-scroll-target"
+
     st.markdown(
-        """
-        <div id="results-scroll-target" style="height: 1px; scroll-margin-top: 64px;"></div>
+        f"""
+        <div id="{target}" style="height: 1px; scroll-margin-top: 64px;"></div>
         <h3 style="margin-top: 0;">Estimated Monthly Payment</h3>
         """,
         unsafe_allow_html=True,
     )
 
-    js = """
-    <script>
-        setTimeout(function() {
-            const doc = window.parent.document;
-            const target = doc.getElementById("results-scroll-target");
-
-            if (target) {
-                target.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start"
-                });
-            }
-        }, 100);
-    </script>
-    """
-
-    st.iframe(js, height=1)
-
+    scroll_to(target)
 
     metric_cols = st.columns(3)
     metric_cols[0].metric("Loan amount", format_currency(loan_amount))
@@ -263,7 +291,7 @@ st.write(
     "will follow up."
 )
 
-with st.form("lead_form", clear_on_submit=True):
+with st.form("lead_form", clear_on_submit=False):
     lead_col1, lead_col2 = st.columns(2)
 
     with lead_col1:
@@ -404,9 +432,9 @@ The borrower consented to be contacted and acknowledged this is not a loan appli
             st.exception(exc)
 
 
-# -----------------------------
+# ---------------------------------------------------------------------------------------------------------------------
 # Footer disclosures
-# -----------------------------
+
 st.divider()
 
 st.caption(
