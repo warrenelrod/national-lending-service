@@ -45,7 +45,7 @@ def is_mobile_user() -> bool:
     return any(keyword in user_agent for keyword in mobile_keywords)
 
 
-def scroll_to(element):
+def scroll_to(element_id):
     js = f"""
     <script>
         setTimeout(function() {{
@@ -257,17 +257,17 @@ estimated_total_payment = monthly_pi + monthly_pmi
 if st.session_state.submitted:
     if is_mobile: st.session_state.submitted = False
 
-    target = "results-scroll-target"
+    element_id = "results-scroll-target"
 
     st.markdown(
         f"""
-        <div id="{target}" style="height: 1px; scroll-margin-top: 64px;"></div>
+        <div id="{element_id}" style="height: 1px; scroll-margin-top: 64px;"></div>
         <h3 style="margin-top: 0;">Estimated Monthly Payment</h3>
         """,
         unsafe_allow_html=True,
     )
 
-    scroll_to(target)
+    scroll_to(element_id)
 
     metric_cols = st.columns(3)
     metric_cols[0].metric("Loan amount", format_currency(loan_amount))
