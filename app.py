@@ -153,6 +153,8 @@ st.info(
 # ---------------------------------------------------------------------------------------------------------------------
 # Calculator
 
+is_mobile = is_mobile_user()
+
 st.header("Mortgage Payment Estimate")
 
 col1, col2 = st.columns(2)
@@ -215,10 +217,11 @@ with col2:
         ],
     )
 
-submitted_calc = st.button("Calculate payment")
-
-if submitted_calc:
-    st.session_state.submitted = True
+if is_mobile or st.session_state.submitted == False:
+    submitted_calc = st.button("Calculate payment")
+    if submitted_calc:
+        st.session_state.submitted = True
+        st.rerun()
 
 
 credit_mapping = {
@@ -245,17 +248,14 @@ annual_rate = credit_mapping[loan_term_years][credit_range]
 down_payment_amount = purchase_price * down_payment_percent / 100
 loan_amount = max(purchase_price - down_payment_amount, 0)
 
-monthly_pmi = (loan_amount * 0.008) / 12
+monthly_pmi = 0 if down_payment_percent >= 20.0 else (loan_amount * 0.008) / 12
 
 monthly_pi = calculate_monthly_pi(loan_amount, annual_rate, loan_term_years)
 estimated_total_payment = monthly_pi + monthly_pmi
 
 
-# is_mobile = is_mobile_user()
-
-
 if st.session_state.submitted:
-    st.session_state.submitted = False
+    # st.session_state.submitted = False
 
     target = "results-scroll-target"
 
