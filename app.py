@@ -244,29 +244,29 @@ estimated_total_payment = monthly_pi + monthly_pmi
 
 
 
-import streamlit.components.v1 as components
-
 # 3. Target subheader with a unique anchor
 if st.session_state.submitted:
     st.session_state.submitted = False
-
-    # st.subheader("Results", anchor="results-subheader")
     st.subheader("Estimated Monthly Payment", anchor="results-subheader")
-
-    # # Display your results
-    # st.write(f"You entered: {user_input}")
 
     # Use JavaScript to programmatically scroll down to the element
     js = """
     <script>
-        var subheader = window.parent.document.querySelector("a[href='#results-subheader']");
-        if (subheader) {
-            subheader.scrollIntoView({behavior: 'smooth', block: 'start'});
-        }
+        setTimeout(function() {
+            const doc = window.parent.document;
+            const anchor = doc.querySelector("a[href='#results-subheader']");
+
+            if (anchor) {
+                anchor.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+            }
+        }, 400);
     </script>
     """
-    components.html(js, height=0)
-    # st.iframe(js, height=1)
+
+    st.iframe(js, height=1)
 
 
     metric_cols = st.columns(3)
