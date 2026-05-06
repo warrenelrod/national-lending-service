@@ -1,19 +1,9 @@
-import time
 from datetime import datetime
 
 import smtplib
 import ssl
 import streamlit as st
 from email.message import EmailMessage
-
-
-# initialize state
-if "submitted" not in st.session_state:
-    st.session_state.submitted = False
-
-if "jump_to_results" not in st.session_state:
-    st.session_state.jump_to_results = False
-
 
 # -----------------------------
 # Page config
@@ -161,6 +151,11 @@ st.info(
 )
 
 
+# 1. Initialize session state to track if the form was submitted
+if "submitted" not in st.session_state:
+    st.session_state.submitted = False
+
+
 # -----------------------------
 # Calculator
 # -----------------------------
@@ -210,17 +205,6 @@ with st.form("mortgage_calculator"):
 
     if submitted_calc:
         st.session_state.submitted = True
-        st.session_state.jump_to_results = True
-
-
-if st.session_state.jump_to_results:
-    st.session_state.jump_to_results = False
-    st.markdown(
-        """
-        <meta http-equiv="refresh" content="0; url=#results-subheader">
-        """,
-        unsafe_allow_html=True,
-    )
 
 
 credit_mapping = {
@@ -254,18 +238,27 @@ estimated_total_payment = monthly_pi + monthly_pmi
 
 
 
-
-
-
+# 3. Target subheader with a unique anchor
 if st.session_state.submitted:
-    st.markdown(
-        """
-        <div id="results-subheader" style="height: 24px;"></div>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.session_state.submitted = False
 
-    st.subheader("Estimated Monthly Payment")
+    # st.subheader("Results", anchor="results-subheader")
+    st.subheader("Estimated Monthly Payment", anchor="results-subheader")
+
+    # # Display your results
+    # st.write(f"You entered: {user_input}")
+
+    # Use JavaScript to programmatically scroll down to the element
+    js = """
+    <script>
+        var subheader = window.parent.document.querySelector("a[href='#results-subheader']");
+        if (subheader) {
+            subheader.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+    </script>
+    """
+    st.iframe(js, height=1)
+
 
     metric_cols = st.columns(3)
     metric_cols[0].metric("Loan amount", format_currency(loan_amount))
@@ -276,6 +269,7 @@ if st.session_state.submitted:
     metric_cols_2[0].metric("Principal & interest", format_currency(monthly_pi))
     metric_cols_2[1].metric("Estimated PMI / MI", format_currency(monthly_pmi))
     metric_cols_2[2].metric("Estimated total monthly payment", format_currency(estimated_total_payment))
+
 
 
 
