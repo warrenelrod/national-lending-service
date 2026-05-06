@@ -1,9 +1,16 @@
-import streamlit as st
+from datetime import datetime
+
 import smtplib
 import ssl
+import streamlit as st
 from email.message import EmailMessage
-from datetime import datetime
-import math
+
+
+if "submitted" not in st.session_state:
+    st.session_state.submitted = False
+
+if "scroll_counter" not in st.session_state:
+    st.session_state.scroll_counter = 0
 
 
 # -----------------------------
@@ -174,7 +181,7 @@ with st.form("mortgage_calculator"):
             min_value=0.0,
             max_value=100.0,
             value=10.0,
-            step=0.5,
+            step=1.0,
             format="%.2f",
         )
 
@@ -199,16 +206,31 @@ with st.form("mortgage_calculator"):
 
     submitted_calc = st.form_submit_button("Calculate payment")
 
+    if submitted_calc:
+        st.session_state.submitted = True
+        st.session_state.scroll_counter += 1
+
+
 credit_mapping = {
-    "760+": 6.32,
-    "720-759": 6.36,
-    "680-719": 6.41,
-    "640-679": 6.46,
-    "600-639": 6.50,
-    "Below 600": 6.54,
+    30: {
+        "760+": 6.32,
+        "720-759": 6.36,
+        "680-719": 6.41,
+        "640-679": 6.46,
+        "600-639": 6.50,
+        "Below 600": 6.54,
+    },
+    15: {
+        "760+": 5.50,
+        "720-759": 5.55,
+        "680-719": 5.60,
+        "640-679": 5.65,
+        "600-639": 5.70,
+        "Below 600": 5.75,
+    }
 }
 
-annual_rate = credit_mapping[credit_range]
+annual_rate = credit_mapping[loan_term_years][credit_range]
 
 down_payment_amount = purchase_price * down_payment_percent / 100
 loan_amount = max(purchase_price - down_payment_amount, 0)
@@ -216,35 +238,79 @@ loan_amount = max(purchase_price - down_payment_amount, 0)
 monthly_pmi = (loan_amount * 0.008) / 12
 
 monthly_pi = calculate_monthly_pi(loan_amount, annual_rate, loan_term_years)
-# monthly_tax = annual_property_tax / 12
-# monthly_insurance = annual_homeowners_insurance / 12
-# estimated_total_payment = monthly_pi + monthly_tax + monthly_insurance + monthly_hoa + monthly_pmi
 estimated_total_payment = monthly_pi + monthly_pmi
 
 
-st.subheader("Estimated Monthly Payment")
+# 3. Target subheader with a unique anchor
+if st.session_state.submitted:
 
-metric_cols = st.columns(3)
-metric_cols[0].metric("Loan amount", format_currency(loan_amount))
-metric_cols[1].metric("Down payment", format_currency(down_payment_amount))
-metric_cols[2].metric("Estimated Interest Rate", f"{annual_rate} %")
+    import streamlit.components.v1 as components
+    st.subheader("Estimated Monthly Payment", anchor="results-subheader")
 
-metric_cols_2 = st.columns(3)
-metric_cols_2[0].metric("Principal & interest", format_currency(monthly_pi))
-metric_cols_2[1].metric("Estimated PMI / MI", format_currency(monthly_pmi))
-metric_cols_2[2].metric("Estimated total monthly payment", format_currency(estimated_total_payment))
+    components.html(
+        f"""
+        <script>
+            const scrollCounter = {st.session_state.scroll_counter};
 
-# with st.expander("Payment breakdown"):
-#     st.write(f"**Purchase price:** {format_currency(purchase_price)}")
-#     st.write(f"**Down payment:** {format_currency(down_payment_amount)}")
-#     st.write(f"**Loan amount:** {format_currency(loan_amount)}")
-#     st.write(f"**Principal & interest:** {format_currency(monthly_pi)}")
-#     st.write(f"**Estimated Interest Rate:** {annual_rate}")
-#     # st.write(f"**Property taxes:** {format_currency(monthly_tax)} / month")
-#     # st.write(f"**Homeowners insurance:** {format_currency(monthly_insurance)} / month")
-#     # st.write(f"**HOA / condo fee:** {format_currency(monthly_hoa)} / month")
-#     st.write(f"**PMI / MI:** {format_currency(monthly_pmi)} / month")
-#     st.write(f"**Estimated total monthly payment:** {format_currency(estimated_total_payment)}")
+            setTimeout(() => {{
+                const anchor = window.parent.document.querySelector("a[href='#results-subheader']");
+
+                if (anchor) {{
+                    const heading = anchor.closest("h2, h3, div") || anchor.parentElement;
+                    const y = heading.getBoundingClientRect().top + window.parent.scrollY - 80;
+
+                    window.parent.scrollTo({{
+                        top: y,
+                        behavior: "smooth"
+                    }});
+                }}
+            }}, 100);
+        </script>
+        """,
+        height=0,
+    )
+
+    # # Use JavaScript to programmatically scroll down to the element
+    # js = """
+    # <script>
+    #     var subheader = window.parent.document.querySelector("a[href='#results-subheader']");
+    #     if (subheader) {
+    #         subheader.scrollIntoView({behavior: 'smooth', block: 'start'});
+    #     }
+    # </script>
+    # """
+    # st.iframe(js, height=1)
+
+
+    metric_cols = st.columns(3)
+    metric_cols[0].metric("Loan amount", format_currency(loan_amount))
+    metric_cols[1].metric("Down payment", format_currency(down_payment_amount))
+    metric_cols[2].metric("Estimated Interest Rate", f"{annual_rate} %")
+
+    metric_cols_2 = st.columns(3)
+    metric_cols_2[0].metric("Principal & interest", format_currency(monthly_pi))
+    metric_cols_2[1].metric("Estimated PMI / MI", format_currency(monthly_pmi))
+    metric_cols_2[2].metric("Estimated total monthly payment", format_currency(estimated_total_payment))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # -----------------------------
