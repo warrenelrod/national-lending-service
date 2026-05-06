@@ -247,17 +247,24 @@ estimated_total_payment = monthly_pi + monthly_pmi
 # 3. Target subheader with a unique anchor
 if st.session_state.submitted:
     st.session_state.submitted = False
-    st.subheader("Estimated Monthly Payment", anchor="results-subheader")
 
-    # Use JavaScript to programmatically scroll down to the element
+    st.markdown(
+        """
+        <div id="results-scroll-target"></div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.subheader("Estimated Monthly Payment")
+
     js = """
     <script>
         setTimeout(function() {
             const doc = window.parent.document;
-            const anchor = doc.querySelector("a[href='#results-subheader']");
+            const target = doc.getElementById("results-scroll-target");
 
-            if (anchor) {
-                anchor.scrollIntoView({
+            if (target) {
+                target.scrollIntoView({
                     behavior: "smooth",
                     block: "start"
                 });
