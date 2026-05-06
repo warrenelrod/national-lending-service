@@ -356,7 +356,7 @@ The borrower consented to be contacted and acknowledged this is not a loan appli
         except Exception as exc:
             st.error(
                 "The form was completed, but the email could not be sent. "
-                "Please check the SMTP configuration."
+                # "Please check the SMTP configuration."
             )
             st.exception(exc)
 
