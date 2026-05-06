@@ -7,11 +7,12 @@ import streamlit as st
 from email.message import EmailMessage
 
 
+# initialize state
 if "submitted" not in st.session_state:
     st.session_state.submitted = False
 
-if "scroll_nonce" not in st.session_state:
-    st.session_state.scroll_nonce = 0
+if "jump_to_results" not in st.session_state:
+    st.session_state.jump_to_results = False
 
 
 # -----------------------------
@@ -209,7 +210,17 @@ with st.form("mortgage_calculator"):
 
     if submitted_calc:
         st.session_state.submitted = True
-        st.session_state.scroll_nonce += 1
+        st.session_state.jump_to_results = True
+
+
+if st.session_state.jump_to_results:
+    st.session_state.jump_to_results = False
+    st.markdown(
+        """
+        <meta http-equiv="refresh" content="0; url=#results-subheader">
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 credit_mapping = {
@@ -247,39 +258,14 @@ estimated_total_payment = monthly_pi + monthly_pmi
 
 
 if st.session_state.submitted:
-    st.subheader("Estimated Monthly Payment", anchor="results-subheader")
-
-    st.iframe(
-        f"""
-        <script>
-            const nonce = {st.session_state.scroll_nonce};
-
-            setTimeout(() => {{
-                const anchor = window.parent.document.querySelector(
-                    "a[href='#results-subheader']"
-                );
-
-                if (anchor) {{
-                    const heading =
-                        anchor.closest("h2, h3") ||
-                        anchor.parentElement;
-
-                    const offset = 90;
-                    const y =
-                        heading.getBoundingClientRect().top +
-                        window.parent.scrollY -
-                        offset;
-
-                    window.parent.scrollTo({{
-                        top: y,
-                        behavior: "smooth"
-                    }});
-                }}
-            }}, 150);
-        </script>
+    st.markdown(
+        """
+        <div id="results-subheader" style="height: 24px;"></div>
         """,
-        height=1,
+        unsafe_allow_html=True,
     )
+
+    st.subheader("Estimated Monthly Payment")
 
     metric_cols = st.columns(3)
     metric_cols[0].metric("Loan amount", format_currency(loan_amount))
