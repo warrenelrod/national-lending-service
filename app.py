@@ -221,7 +221,7 @@ if is_mobile or st.session_state.submitted == False:
     submitted_calc = st.button("Calculate payment")
     if submitted_calc:
         st.session_state.submitted = True
-        st.rerun()
+        if not is_mobile: st.rerun()
 
 
 credit_mapping = {
