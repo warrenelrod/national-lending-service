@@ -237,25 +237,16 @@ monthly_pi = calculate_monthly_pi(loan_amount, annual_rate, loan_term_years)
 estimated_total_payment = monthly_pi + monthly_pmi
 
 
-
-
-
-
-
-
-
-# 3. Target subheader with a unique anchor
 if st.session_state.submitted:
     st.session_state.submitted = False
 
     st.markdown(
         """
-        <div id="results-scroll-target"></div>
+        <div id="results-scroll-target" style="height: 1px; scroll-margin-top: 64px;"></div>
+        <h3 style="margin-top: 0;">Estimated Monthly Payment</h3>
         """,
         unsafe_allow_html=True,
     )
-
-    st.subheader("Estimated Monthly Payment")
 
     js = """
     <script>
@@ -269,7 +260,7 @@ if st.session_state.submitted:
                     block: "start"
                 });
             }
-        }, 400);
+        }, 100);
     </script>
     """
 
