@@ -241,7 +241,12 @@ monthly_pi = calculate_monthly_pi(loan_amount, annual_rate, loan_term_years)
 estimated_total_payment = monthly_pi + monthly_pmi
 
 
-# 3. Target subheader with a unique anchor
+
+
+
+
+import streamlit.components.v1 as components
+
 if st.session_state.submitted:
     st.subheader("Estimated Monthly Payment", anchor="results-subheader")
 
