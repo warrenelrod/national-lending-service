@@ -238,6 +238,14 @@ estimated_total_payment = monthly_pi + monthly_pmi
 
 
 
+
+
+
+
+
+
+import streamlit.components.v1 as components
+
 # 3. Target subheader with a unique anchor
 if st.session_state.submitted:
     st.session_state.submitted = False
@@ -257,7 +265,8 @@ if st.session_state.submitted:
         }
     </script>
     """
-    st.iframe(js, height=1)
+    components.html(js, height=0)
+    # st.iframe(js, height=1)
 
 
     metric_cols = st.columns(3)
