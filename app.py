@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 
 st.set_page_config(
     page_title="Mortgage Calculator",
@@ -7,56 +6,46 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# PWA-ish iOS meta tags.
-# These only matter when the user adds the app to the iOS Home Screen.
-# They will not force Safari's toolbar to hide in a normal browser tab.
-components.html(
-    """
-    <script>
-    const metaTags = [
-        ["apple-mobile-web-app-capable", "yes"],
-        ["apple-mobile-web-app-status-bar-style", "black-translucent"],
-        ["apple-mobile-web-app-title", "Mortgage Calculator"],
-        ["mobile-web-app-capable", "yes"],
-        ["theme-color", "#07051f"]
-    ];
-
-    for (const [name, content] of metaTags) {
-        let tag = window.parent.document.querySelector(`meta[name="${name}"]`);
-        if (!tag) {
-            tag = window.parent.document.createElement("meta");
-            tag.setAttribute("name", name);
-            window.parent.document.head.appendChild(tag);
-        }
-        tag.setAttribute("content", content);
-    }
-    </script>
-    """,
-    height=0,
-)
-
 st.markdown(
     """
     <style>
-    html,
-    body {
-        height: 100%;
+    :root {
+        --section-count: 3;
+    }
+
+    html {
         margin: 0;
-        overflow: hidden;
-        overscroll-behavior: none;
+        padding: 0;
+        min-height: 100%;
+        overflow-x: hidden;
+        overflow-y: scroll;
+
+        scroll-snap-type: y mandatory;
+        scroll-padding: 0;
+        scroll-behavior: smooth;
+
         background: #07051f;
+        overscroll-behavior-y: none;
     }
 
     body {
-        position: fixed;
-        width: 100%;
-        height: 100%;
-        -webkit-overflow-scrolling: auto;
+        margin: 0;
+        padding: 0;
+        min-height: calc(var(--section-count) * 100dvh);
+        overflow-x: hidden;
+        overflow-y: visible;
+
+        background: #07051f;
+        -webkit-overflow-scrolling: touch;
     }
 
-    .stApp {
-        height: 100dvh;
-        overflow: hidden;
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+
         background:
             radial-gradient(
                 circle at 95% 6%,
@@ -72,7 +61,12 @@ st.markdown(
                 #171052 58%,
                 #07051f 100%
             );
-        background-attachment: fixed;
+    }
+
+    .stApp {
+        min-height: calc(var(--section-count) * 100dvh);
+        overflow: visible;
+        background: transparent;
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
     }
 
@@ -80,23 +74,19 @@ st.markdown(
     div[data-testid="stAppViewContainer"],
     div[data-testid="stMain"],
     div[data-testid="stMainBlockContainer"] {
-        height: 100dvh;
-        max-height: 100dvh;
-        overflow: hidden;
+        min-height: calc(var(--section-count) * 100dvh);
+        height: auto;
+        overflow: visible;
+        background: transparent;
     }
 
     .block-container {
         max-width: 430px;
-        height: 100dvh;
-        max-height: 100dvh;
 
-        overflow-y: scroll;
-        overflow-x: hidden;
+        height: auto;
+        min-height: calc(var(--section-count) * 100dvh);
 
-        scroll-snap-type: y mandatory;
-        scroll-snap-stop: always;
-        scroll-padding: 0;
-        scroll-behavior: smooth;
+        overflow: visible;
 
         padding-top: 0rem;
         padding-bottom: 0rem;
@@ -104,13 +94,7 @@ st.markdown(
         padding-right: 1rem;
 
         box-sizing: border-box;
-
-        -webkit-overflow-scrolling: touch;
-        overscroll-behavior-y: contain;
-    }
-
-    .block-container::-webkit-scrollbar {
-        display: none;
+        background: transparent;
     }
 
     .st-key-input_section,
@@ -129,11 +113,19 @@ st.markdown(
 
         padding: 1.25rem 0;
         box-sizing: border-box;
+        background: transparent;
     }
 
     header,
-    footer {
-        visibility: hidden;
+    footer,
+    [data-testid="stHeader"],
+    [data-testid="stToolbar"],
+    [data-testid="stDecoration"],
+    [data-testid="stStatusWidget"],
+    #MainMenu {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
     }
 
     h1 {
