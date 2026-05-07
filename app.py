@@ -9,43 +9,31 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    :root {
-        --section-count: 3;
-    }
-
-    html {
-        margin: 0;
-        padding: 0;
-        min-height: 100%;
-        overflow-x: hidden;
-        overflow-y: scroll;
-
-        scroll-snap-type: y mandatory;
-        scroll-padding: 0;
-        scroll-behavior: smooth;
-
-        background: #07051f;
-        overscroll-behavior-y: none;
-    }
-
+    html,
     body {
         margin: 0;
         padding: 0;
-        min-height: calc(var(--section-count) * 100dvh);
-        overflow-x: hidden;
-        overflow-y: visible;
-
-        background: #07051f;
-        -webkit-overflow-scrolling: touch;
+        width: 100%;
+        height: 100%;
+        min-height: 100%;
+        overflow: hidden;
+        overscroll-behavior: none;
+        background: #07051f !important;
     }
 
-    body::before {
+    body {
+        position: relative;
+        -webkit-overflow-scrolling: auto;
+    }
+
+    html::before,
+    body::before,
+    .stApp::before {
         content: "";
         position: fixed;
         inset: 0;
         z-index: -1;
         pointer-events: none;
-
         background:
             radial-gradient(
                 circle at 95% 6%,
@@ -64,9 +52,11 @@ st.markdown(
     }
 
     .stApp {
-        min-height: calc(var(--section-count) * 100dvh);
-        overflow: visible;
-        background: transparent;
+        height: 100svh;
+        min-height: 100svh;
+        max-height: 100svh;
+        overflow: hidden;
+        background: #07051f !important;
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
     }
 
@@ -74,35 +64,51 @@ st.markdown(
     div[data-testid="stAppViewContainer"],
     div[data-testid="stMain"],
     div[data-testid="stMainBlockContainer"] {
-        min-height: calc(var(--section-count) * 100dvh);
-        height: auto;
-        overflow: visible;
-        background: transparent;
+        height: 100svh;
+        min-height: 100svh;
+        max-height: 100svh;
+        overflow: hidden;
+        background: transparent !important;
     }
 
     .block-container {
         max-width: 430px;
 
-        height: auto;
-        min-height: calc(var(--section-count) * 100dvh);
+        height: 100svh;
+        min-height: 100svh;
+        max-height: 100svh;
 
-        overflow: visible;
+        overflow-y: scroll;
+        overflow-x: hidden;
+
+        scroll-snap-type: y mandatory;
+        scroll-padding: 0;
+        scroll-behavior: auto;
 
         padding-top: 0rem;
-        padding-bottom: 0rem;
+        padding-bottom: max(0rem, env(safe-area-inset-bottom));
         padding-left: 1rem;
         padding-right: 1rem;
 
         box-sizing: border-box;
-        background: transparent;
+
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+
+        background: transparent !important;
+        scrollbar-width: none;
+    }
+
+    .block-container::-webkit-scrollbar {
+        display: none;
     }
 
     .st-key-input_section,
     .st-key-result_section,
     .st-key-breakdown_section {
-        height: 100dvh;
-        min-height: 100dvh;
-        max-height: 100dvh;
+        height: 100svh;
+        min-height: 100svh;
+        max-height: 100svh;
 
         scroll-snap-align: start;
         scroll-snap-stop: always;
@@ -113,7 +119,7 @@ st.markdown(
 
         padding: 1.25rem 0;
         box-sizing: border-box;
-        background: transparent;
+        background: transparent !important;
     }
 
     header,
@@ -126,6 +132,9 @@ st.markdown(
         display: none !important;
         visibility: hidden !important;
         height: 0 !important;
+        min-height: 0 !important;
+        max-height: 0 !important;
+        background: transparent !important;
     }
 
     h1 {
