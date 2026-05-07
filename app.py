@@ -1,9 +1,38 @@
 import streamlit as st
+import streamlit.components.v1 as components
 
 st.set_page_config(
     page_title="Mortgage Calculator",
     layout="centered",
     initial_sidebar_state="collapsed",
+)
+
+# PWA-ish iOS meta tags.
+# These only matter when the user adds the app to the iOS Home Screen.
+# They will not force Safari's toolbar to hide in a normal browser tab.
+components.html(
+    """
+    <script>
+    const metaTags = [
+        ["apple-mobile-web-app-capable", "yes"],
+        ["apple-mobile-web-app-status-bar-style", "black-translucent"],
+        ["apple-mobile-web-app-title", "Mortgage Calculator"],
+        ["mobile-web-app-capable", "yes"],
+        ["theme-color", "#07051f"]
+    ];
+
+    for (const [name, content] of metaTags) {
+        let tag = window.parent.document.querySelector(`meta[name="${name}"]`);
+        if (!tag) {
+            tag = window.parent.document.createElement("meta");
+            tag.setAttribute("name", name);
+            window.parent.document.head.appendChild(tag);
+        }
+        tag.setAttribute("content", content);
+    }
+    </script>
+    """,
+    height=0,
 )
 
 st.markdown(
@@ -12,8 +41,17 @@ st.markdown(
     html,
     body {
         height: 100%;
+        margin: 0;
         overflow: hidden;
         overscroll-behavior: none;
+        background: #07051f;
+    }
+
+    body {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        -webkit-overflow-scrolling: auto;
     }
 
     .stApp {
@@ -34,6 +72,7 @@ st.markdown(
                 #171052 58%,
                 #07051f 100%
             );
+        background-attachment: fixed;
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
     }
 
@@ -42,24 +81,31 @@ st.markdown(
     div[data-testid="stMain"],
     div[data-testid="stMainBlockContainer"] {
         height: 100dvh;
+        max-height: 100dvh;
+        overflow: hidden;
     }
 
     .block-container {
         max-width: 430px;
         height: 100dvh;
+        max-height: 100dvh;
+
         overflow-y: scroll;
         overflow-x: hidden;
 
         scroll-snap-type: y mandatory;
+        scroll-snap-stop: always;
         scroll-padding: 0;
-        scroll-behavior: auto;
+        scroll-behavior: smooth;
 
         padding-top: 0rem;
         padding-bottom: 0rem;
         padding-left: 1rem;
         padding-right: 1rem;
 
-        -webkit-overflow-scrolling: auto;
+        box-sizing: border-box;
+
+        -webkit-overflow-scrolling: touch;
         overscroll-behavior-y: contain;
     }
 
@@ -85,7 +131,8 @@ st.markdown(
         box-sizing: border-box;
     }
 
-    header, footer {
+    header,
+    footer {
         visibility: hidden;
     }
 
@@ -116,7 +163,10 @@ st.markdown(
         box-shadow: 0 14px 34px rgba(0,0,0,0.08);
     }
 
-    label, .stSlider label, .stSelectbox label, .stNumberInput label {
+    label,
+    .stSlider label,
+    .stSelectbox label,
+    .stNumberInput label {
         color: #151515 !important;
         font-size: 0.95rem !important;
         font-weight: 750 !important;
