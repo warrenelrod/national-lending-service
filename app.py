@@ -176,7 +176,7 @@ st.markdown(
         backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
         border-radius: 22px;
-        padding: 1.25rem 1.1rem 1.45rem;
+        padding: 1.25rem 1.1rem 0.85rem 1.45rem;
         box-shadow:
           inset 0 1px 0 rgba(255,255,255,0.45),
           0 18px 45px rgba(25,25,110,0.20);
@@ -273,7 +273,7 @@ st.markdown(
 
       .payment-card {
         background: rgba(255,255,255,0.9);
-        border-radius: 24px;
+        border-radius: 12px;
         padding: 1.35rem 1.15rem;
         box-shadow: 0 14px 34px rgba(0,0,0,0.08);
         margin-top: 1.1rem;
@@ -839,4 +839,6 @@ st.html(html, unsafe_allow_javascript=True)
 #   tap the down payment dollar & percent labels to manually enter a value
 #   dollar & percent labels are not the same height
 #   dollar label title needs bottom margin
+#   sometimes the dollar & percent labels go blank?
 #   <div class="snap-hint">  not the same font size across pages ??
+#   detect if a github push occurs and perform a full st.rerun()?
