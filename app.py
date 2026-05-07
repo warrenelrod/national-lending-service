@@ -325,14 +325,16 @@ with st.container(key="input_section"):
                 key="interest_rate_widget",
             )
 
-        with col2:
-            loan_term = st.selectbox(
-                "Loan Term",
-                options=[10, 15, 20, 25, 30],
-                index=[10, 15, 20, 25, 30].index(st.session_state.loan_term),
-                format_func=lambda x: f"{x} years",
-                key="loan_term_widget",
-            )
+        # with col2:
+        #     loan_term = st.selectbox(
+        #         "Loan Term",
+        #         options=[10, 15, 20, 25, 30],
+        #         index=[10, 15, 20, 25, 30].index(st.session_state.loan_term),
+        #         format_func=lambda x: f"{x} years",
+        #         key="loan_term_widget",
+        #     )
+
+        loan_term = 30
 
         down_payment_pct = st.slider(
             "Down Payment",
@@ -353,6 +355,18 @@ with st.container(key="input_section"):
                 <div class="blue-pill">${down_payment:,.0f}</div>
                 <div class="white-pill">{down_payment_pct}%</div>
             </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        principal_interest = monthly_payment(principal, interest_rate, loan_term)
+
+        st.markdown(
+            f"""
+            <div class="payment-card">
+                <div class="payment-title">Estimated Monthly Payment</div>
+                <div class="big-payment">${principal_interest:,.0f}</div>
+                <div class="subtle">principal + interest</div>
             """,
             unsafe_allow_html=True,
         )
