@@ -1,381 +1,507 @@
-# app.py
-import streamlit as st
+from datetime import datetime
 
+import smtplib
+import ssl
+import streamlit as st
+from email.message import EmailMessage
+
+
+# -----------------------------
+# Page config
+# -----------------------------
 st.set_page_config(
-    page_title="Mortgage Calculator",
+    page_title="Pinellas Mortgage Calculator",
+    page_icon="🏠",
     layout="centered",
-    initial_sidebar_state="collapsed",
+    menu_items={
+        "Get Help": None,
+        "Report a bug": None,
+        "About": None,
+    },
+)
+
+
+# -----------------------------
+# Session state
+# -----------------------------
+if "submitted" not in st.session_state:
+    st.session_state.submitted = False
+
+
+# -----------------------------
+# App styling
+# -----------------------------
+with open("style.css") as f:
+    css = f.read()
+
+st.markdown(f"""\
+<style>
+{css}\
+</style>""",
+    unsafe_allow_html=True,
+)
+
+
+# -----------------------------
+# Helper functions
+# -----------------------------
+def is_mobile_user() -> bool:
+    try:
+        user_agent = st.context.headers.get("user-agent", "").lower()
+    except Exception:
+        user_agent = ""
+
+    mobile_keywords = [
+        "iphone",
+        "android",
+        "ipad",
+        "mobile",
+        "blackberry",
+        "windows phone",
+    ]
+
+    return any(keyword in user_agent for keyword in mobile_keywords)
+
+
+def scroll_to(element_id):
+    js = f"""
+    <script>
+        setTimeout(function() {{
+            const target = document.getElementById("{element_id}");
+
+            if (target) {{
+                target.scrollIntoView({{
+                    behavior: "smooth",
+                    block: "start"
+                }});
+            }}
+        }}, 50);
+    </script>
+    """
+    st.html(js, unsafe_allow_javascript=True)
+
+
+def calculate_monthly_pi(loan_amount: float, annual_rate: float, years: int) -> float:
+    """
+    Principal + interest monthly payment.
+    """
+    if loan_amount <= 0 or years <= 0:
+        return 0.0
+
+    monthly_rate = annual_rate / 100 / 12
+    number_payments = years * 12
+
+    if monthly_rate == 0:
+        return loan_amount / number_payments
+
+    payment = loan_amount * (
+        monthly_rate * (1 + monthly_rate) ** number_payments
+    ) / (
+        (1 + monthly_rate) ** number_payments - 1
+    )
+
+    return payment
+
+
+def format_currency(value: float, precision: int=2) -> str:
+    return f"${value:,.{precision}f}"
+
+
+def send_email(subject: str, body: str, reply_to: str | None = None) -> None:
+    """
+    Sends email using SMTP credentials from Streamlit secrets.
+    Required secrets:
+      SMTP_HOST
+      SMTP_PORT
+      SMTP_USERNAME
+      SMTP_PASSWORD
+      FROM_EMAIL
+      TO_EMAIL
+    """
+    smtp_host = st.secrets["SMTP_HOST"]
+    smtp_port = int(st.secrets["SMTP_PORT"])
+    smtp_username = st.secrets["SMTP_USERNAME"]
+    smtp_password = st.secrets["SMTP_PASSWORD"]
+    from_email = st.secrets["FROM_EMAIL"]
+    to_email = st.secrets["TO_EMAIL"]
+
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = from_email
+    msg["To"] = to_email
+
+    if reply_to:
+        msg["Reply-To"] = reply_to
+
+    msg.set_content(body)
+
+    context = ssl.create_default_context()
+
+    with smtplib.SMTP_SSL(smtp_host, smtp_port, context=context) as server:
+        server.login(smtp_username, smtp_password)
+        server.send_message(msg)
+
+
+# -----------------------------
+# Branding / compliance placeholders
+# -----------------------------
+MLO_NAME = "Your MLO Name"
+COMPANY_NAME = "Your Mortgage Company"
+NMLS_ID = "NMLS #XXXXXXX"
+FL_LICENSE = "Florida License #XXXXXXX"
+SERVICE_AREA = "Pinellas County and surrounding Florida communities"
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Header
+
+st.markdown(
+    f"""
+    <div class="hero-card">
+        <div class="hero-eyebrow">Mortgage payment estimate</div>
+        <div class="hero-title">Pinellas Mortgage Calculator</div>
+        <div class="hero-subtitle">
+            Estimate a monthly mortgage payment, then request a consultation with a licensed loan originator
+            serving {SERVICE_AREA}.
+        </div>
+        <div class="hero-badges">
+            <div class="hero-badge">🏢 {COMPANY_NAME}</div>
+            <div class="hero-badge">👤 {MLO_NAME}</div>
+            <div class="hero-badge">📋 {NMLS_ID}</div>
+            <div class="hero-badge">📍 {FL_LICENSE}</div>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
 
 st.markdown(
     """
-    <style>
-    html {
-        scroll-behavior: smooth;
-        scroll-snap-type: y mandatory;
-    }
-
-    body {
-        overscroll-behavior-y: contain;
-    }
-
-    .stApp {
-        background:
-            linear-gradient(180deg, #20209b 0%, #3432d0 34%, #f3f3f8 68%, #fafafa 100%);
-        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
-    }
-
-    header, footer {
-        visibility: hidden;
-    }
-
-    .block-container {
-        max-width: 430px;
-        padding-top: 0rem;
-        padding-bottom: 0rem;
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-
-    .st-key-input_section,
-    .st-key-result_section,
-    .st-key-breakdown_section {
-        min-height: 100svh;
-        scroll-snap-align: start;
-        scroll-snap-stop: always;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: 1.25rem 0;
-    }
-
-    h1 {
-        color: white;
-        font-size: 3.15rem !important;
-        line-height: 0.95 !important;
-        letter-spacing: -0.08em;
-        font-weight: 850 !important;
-        margin-bottom: 1.2rem !important;
-    }
-
-    .glass-card {
-        background: rgba(255, 255, 255, 0.74);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
-        border-radius: 22px;
-        padding: 1.25rem 1.1rem 1.45rem 1.1rem;
-        box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.45),
-            0 18px 45px rgba(25,25,110,0.20);
-    }
-
-    .payment-card {
-        background: rgba(255,255,255,0.9);
-        border-radius: 24px;
-        padding: 1.35rem 1.15rem;
-        box-shadow: 0 14px 34px rgba(0,0,0,0.08);
-    }
-
-    label, .stSlider label, .stSelectbox label, .stNumberInput label {
-        color: #151515 !important;
-        font-size: 0.95rem !important;
-        font-weight: 750 !important;
-    }
-
-    .stNumberInput input {
-        background: rgba(255,255,255,0.84) !important;
-        border: none !important;
-        border-radius: 11px !important;
-        font-size: 1.15rem !important;
-        font-weight: 750 !important;
-        color: #111 !important;
-    }
-
-    div[data-baseweb="select"] > div {
-        background: rgba(255,255,255,0.84) !important;
-        border: none !important;
-        border-radius: 11px !important;
-        font-size: 1rem !important;
-        font-weight: 750 !important;
-        color: #111 !important;
-    }
-
-    .stSlider [role="slider"] {
-        background-color: #4156f4 !important;
-        border: 3px solid white !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,.25);
-    }
-
-    .stSlider [data-testid="stThumbValue"] {
-        background: #4156f4 !important;
-        color: white !important;
-        border-radius: 8px !important;
-        font-weight: 800 !important;
-    }
-
-    .pill-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: -0.25rem;
-    }
-
-    .blue-pill {
-        background: #4156f4;
-        color: white;
-        font-size: 1.25rem;
-        font-weight: 850;
-        padding: 0.45rem 0.7rem;
-        border-radius: 11px;
-        box-shadow: 0 3px 8px rgba(65,86,244,.32);
-    }
-
-    .white-pill {
-        background: white;
-        color: #111;
-        font-size: 1.15rem;
-        font-weight: 850;
-        padding: 0.45rem 0.7rem;
-        border-radius: 11px;
-    }
-
-    .payment-title {
-        font-size: 1rem;
-        font-weight: 850;
-        color: #111;
-        margin-bottom: 0.25rem;
-    }
-
-    .big-payment {
-        font-size: 3.8rem;
-        line-height: 1;
-        letter-spacing: -0.08em;
-        font-weight: 500;
-        color: #050505;
-        margin-bottom: 0.65rem;
-    }
-
-    .subtle {
-        color: #333;
-        font-size: 0.95rem;
-        margin-bottom: 1.15rem;
-    }
-
-    .total {
-        color: #333;
-        font-size: 0.98rem;
-        line-height: 1.3;
-    }
-
-    .total strong {
-        color: #111;
-        font-weight: 850;
-    }
-
-    .snap-hint {
-        text-align: center;
-        color: rgba(255,255,255,.82);
-        font-size: 0.82rem;
-        margin-top: 1rem;
-    }
-
-    .dark-hint {
-        text-align: center;
-        color: rgba(0,0,0,.55);
-        font-size: 0.82rem;
-        margin-top: 1rem;
-    }
-
-    .metric-box {
-        background: rgba(255,255,255,0.86);
-        border-radius: 18px;
-        padding: 1rem;
-        margin-bottom: 0.75rem;
-    }
-
-    .metric-label {
-        color: #555;
-        font-size: 0.85rem;
-        font-weight: 700;
-        margin-bottom: 0.2rem;
-    }
-
-    .metric-value {
-        color: #111;
-        font-size: 1.7rem;
-        font-weight: 850;
-        letter-spacing: -0.04em;
-    }
-    </style>
+    <div class="disclosure-card">
+        <strong>Educational estimate only.</strong>
+        This calculator is not a loan approval, loan estimate, commitment to lend, or advertisement of a locked
+        interest rate. Final terms depend on credit, income, assets, property, loan program, and underwriting.
+    </div>
     """,
     unsafe_allow_html=True,
 )
 
 
-def monthly_payment(principal, annual_rate, years):
-    monthly_rate = annual_rate / 100 / 12
-    months = years * 12
+# ---------------------------------------------------------------------------------------------------------------------
+# Calculator
 
-    if monthly_rate == 0:
-        return principal / months
+is_mobile = is_mobile_user()
 
-    return principal * (monthly_rate * (1 + monthly_rate) ** months) / (
-        (1 + monthly_rate) ** months - 1
-    )
+st.markdown(
+    """
+    <div class="section-shell">
+        <h2>Mortgage Payment Estimate</h2>
+        <div class="section-copy">
+            Adjust the purchase price, down payment, loan term, and estimated credit range to preview a payment.
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
-
-if "loan_amount" not in st.session_state:
-    st.session_state.loan_amount = 425_000
-
-if "interest_rate" not in st.session_state:
-    st.session_state.interest_rate = 6.875
-
-if "loan_term" not in st.session_state:
-    st.session_state.loan_term = 30
-
-if "down_payment_pct" not in st.session_state:
-    st.session_state.down_payment_pct = 20
-
-if "taxes_insurance" not in st.session_state:
-    st.session_state.taxes_insurance = 680
-
-
-with st.container(key="input_section"):
-    st.markdown("# Mortgage<br>Calculator", unsafe_allow_html=True)
-
-    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-
-    loan_amount = st.number_input(
-        "Loan Amount",
-        min_value=50_000,
-        max_value=3_000_000,
-        value=st.session_state.loan_amount,
-        step=5_000,
-        format="%d",
-        key="loan_amount_widget",
-    )
-
-    col1, col2 = st.columns(2)
+with st.container(border=True):
+    col1, col2 = st.columns(2, gap="large")
 
     with col1:
-        interest_rate = st.selectbox(
-            "Interest Rate",
-            options=[4.875, 5.125, 5.500, 5.875, 6.125, 6.500, 6.875, 7.125, 7.500],
-            index=[4.875, 5.125, 5.500, 5.875, 6.125, 6.500, 6.875, 7.125, 7.500].index(
-                st.session_state.interest_rate
-            ),
-            format_func=lambda x: f"{x:.3f}%",
-            key="interest_rate_widget",
+        purchase_price = st.number_input(
+            "Purchase price",
+            min_value=0.0,
+            value=450000.0,
+            step=25000.0,
+            format="%.2f",
         )
+
+        with st.container(key="down-payment-row"):
+            down_col1, down_col2 = st.columns([1, 1], gap="small")
+
+            with down_col1:
+                down_payment_percent = st.number_input(
+                    "Down payment %",
+                    min_value=0.0,
+                    max_value=100.0,
+                    value=10.0,
+                    step=5.0,
+                    format="%.2f",
+                )
+
+            with down_col2:
+                down_payment_amount_preview = purchase_price * down_payment_percent / 100
+
+                st.markdown(
+                    f"""
+                    <div class="amount-preview">
+                        {format_currency(down_payment_amount_preview)}
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
 
     with col2:
-        loan_term = st.selectbox(
-            "Loan Term",
-            options=[10, 15, 20, 25, 30],
-            index=[10, 15, 20, 25, 30].index(st.session_state.loan_term),
-            format_func=lambda x: f"{x} years",
-            key="loan_term_widget",
+        loan_term_years = st.selectbox(
+            "Loan term",
+            options=[30, 15],
+            index=0,
         )
 
-    down_payment_pct = st.slider(
-        "Down Payment",
-        min_value=0,
-        max_value=50,
-        value=st.session_state.down_payment_pct,
-        step=1,
-        format="%d%%",
-        key="down_payment_widget",
-    )
+        credit_range = st.selectbox(
+            "Estimated credit score range",
+            options=[
+                "760+",
+                "720-759",
+                "680-719",
+                "640-679",
+                "600-639",
+                "Below 600",
+            ],
+        )
 
-    down_payment = loan_amount * down_payment_pct / 100
-    principal = loan_amount - down_payment
-
-    st.markdown(
-        f"""
-        <div class="pill-row">
-            <div class="blue-pill">${down_payment:,.0f}</div>
-            <div class="white-pill">{down_payment_pct}%</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown('<div class="snap-hint">Swipe up for payment ↓</div>', unsafe_allow_html=True)
+    if is_mobile or not st.session_state.submitted:
+        submitted_calc = st.button("Calculate payment")
+        if submitted_calc:
+            st.session_state.submitted = True
+            if not is_mobile: st.rerun()
 
 
-principal_interest = monthly_payment(principal, interest_rate, loan_term)
+credit_mapping = {
+    30: {
+        "760+": 6.32,
+        "720-759": 6.36,
+        "680-719": 6.41,
+        "640-679": 6.46,
+        "600-639": 6.50,
+        "Below 600": 6.54,
+    },
+    15: {
+        "760+": 5.50,
+        "720-759": 5.55,
+        "680-719": 5.60,
+        "640-679": 5.65,
+        "600-639": 5.70,
+        "Below 600": 5.75,
+    }
+}
+
+annual_rate = credit_mapping[loan_term_years][credit_range]
+
+down_payment_amount = purchase_price * down_payment_percent / 100
+loan_amount = max(purchase_price - down_payment_amount, 0)
+
+monthly_pmi = 0 if down_payment_percent >= 20.0 else (loan_amount * 0.008) / 12
+
+monthly_pi = calculate_monthly_pi(loan_amount, annual_rate, loan_term_years)
+estimated_total_payment = monthly_pi + monthly_pmi
 
 
-with st.container(key="result_section"):
-    st.markdown(
-        f"""
-        <div class="payment-card">
-            <div class="payment-title">Estimated Monthly Payment</div>
-            <div class="big-payment">${principal_interest:,.0f}</div>
-            <div class="subtle">principal + interest</div>
-        """,
-        unsafe_allow_html=True,
-    )
+if st.session_state.submitted:
+    if is_mobile: st.session_state.submitted = False
 
-    taxes_insurance = st.slider(
-        "Estimated taxes & insurance",
-        min_value=0,
-        max_value=2_000,
-        value=st.session_state.taxes_insurance,
-        step=25,
-        format="$%d",
-        key="taxes_insurance_widget",
-    )
-
-    total_monthly = principal_interest + taxes_insurance
-
-    st.markdown(
-        f"""
-            <div class="total">
-                Total monthly <strong>~${total_monthly:,.0f}</strong><br>
-                including taxes &amp; insurance
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.markdown('<div class="dark-hint">Swipe up for breakdown ↓</div>', unsafe_allow_html=True)
-
-
-with st.container(key="breakdown_section"):
-    total_interest = principal_interest * loan_term * 12 - principal
-    total_paid = principal + total_interest
+    element_id = "results-scroll-target"
 
     st.markdown(
         f"""
-        <div class="payment-card">
-            <div class="payment-title">Loan Breakdown</div>
-
-            <div class="metric-box">
-                <div class="metric-label">Loan Principal</div>
-                <div class="metric-value">${principal:,.0f}</div>
-            </div>
-
-            <div class="metric-box">
-                <div class="metric-label">Down Payment</div>
-                <div class="metric-value">${down_payment:,.0f}</div>
-            </div>
-
-            <div class="metric-box">
-                <div class="metric-label">Total Interest</div>
-                <div class="metric-value">${total_interest:,.0f}</div>
-            </div>
-
-            <div class="metric-box">
-                <div class="metric-label">Total Principal + Interest</div>
-                <div class="metric-value">${total_paid:,.0f}</div>
+        <div id="{element_id}" class="scroll-target"></div>
+        <div class="result-panel">
+            <div class="result-title-row">
+                <div>
+                    <h2 class="result-heading">Estimated Monthly Payment</h2>
+                </div>
+                <div class="rate-pill">Estimated rate: {annual_rate:.2f}%</div>
             </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    st.markdown('<div class="dark-hint">Swipe down to go back ↑</div>', unsafe_allow_html=True)
+    scroll_to(element_id)
+
+    metric_cols = st.columns(3, gap="small")
+    metric_cols[0].metric("Loan amount", format_currency(loan_amount))
+    metric_cols[1].metric("Down payment", format_currency(down_payment_amount))
+    metric_cols[2].metric("Estimated Interest Rate", f"{annual_rate} %")
+
+    metric_cols_2 = st.columns(3, gap="small")
+    metric_cols_2[0].metric("Principal & interest", format_currency(monthly_pi))
+    metric_cols_2[1].metric("Estimated PMI / MI", format_currency(monthly_pmi))
+    metric_cols_2[2].metric("Estimated monthly payment", format_currency(estimated_total_payment))
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Lead submission form
+
+def build_left_col_widgets():
+    first_name = st.text_input("First name *")
+    last_name = st.text_input("Last name *")
+    email = st.text_input("Email *")
+    phone = st.text_input("Phone *")
+    return first_name, last_name, email, phone
+
+
+def build_right_col_widgets():
+    loan_purpose = st.selectbox(
+        "Loan purpose *",
+        options=[
+            "Purchase",
+            "Refinance",
+            "Cash-out refinance",
+            "HELOC / second mortgage",
+            "Not sure yet"
+        ]
+    )
+
+    property_location = st.text_input(
+        "Property city / county",
+        value="Pinellas County, FL"
+    )
+
+    target_price = st.number_input(
+        "Estimated purchase price or home value",
+        min_value=0.0,
+        value=float(purchase_price),
+        step=5000.0,
+        format="%.2f"
+    )
+
+    credit_range = st.selectbox(
+        "Estimated credit score range",
+        options=[
+            "760+",
+            "720-759",
+            "680-719",
+            "640-679",
+            "600-639",
+            "Below 600",
+            "Not sure / prefer not to say"
+        ]
+    )
+    return loan_purpose, property_location, target_price, credit_range
+
+st.divider()
+
+st.markdown(
+    f"""
+    <div class="section-shell">
+        <h2>Request a Mortgage Consultation</h2>
+        <div class="section-copy">
+            Submit your information and a licensed loan originator serving {SERVICE_AREA} will follow up.
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+with st.form("lead_form", clear_on_submit=False):
+    if is_mobile:
+        first_name, last_name, email, phone = build_left_col_widgets()
+        loan_purpose, property_location, target_price, credit_range = build_right_col_widgets()
+    else:
+        lead_col1, lead_col2 = st.columns(2, gap="large")
+        with lead_col1:
+            first_name, last_name, email, phone = build_left_col_widgets()
+
+        with lead_col2:
+            loan_purpose, property_location, target_price, credit_range = build_right_col_widgets()
+
+
+    message = st.text_area(
+        "Anything else you want the MLO to know?",
+        placeholder="Example: first-time buyer, VA loan, condo, self-employed, relocating, etc."
+    )
+
+    consent = st.checkbox(
+        "I consent to be contacted by phone, email, or text about mortgage financing. "
+        "Message/data rates may apply. I understand this is not a loan application or approval."
+    )
+
+    submit_lead = st.form_submit_button("Submit request")
+
+
+if submit_lead:
+    required_fields = {
+        "First name": first_name,
+        "Last name": last_name,
+        "Email": email,
+        "Phone": phone,
+    }
+
+    missing = [field for field, value in required_fields.items() if not value.strip()]
+
+    if missing:
+        st.error(f"Please complete: {', '.join(missing)}")
+    elif not consent:
+        st.error("Please provide contact consent before submitting.")
+    else:
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        subject = f"New mortgage lead: {first_name} {last_name} - {loan_purpose}"
+
+        email_body = f"""
+New mortgage lead submitted from Streamlit portal.
+
+Submitted at: {timestamp}
+
+CONTACT
+Name: {first_name} {last_name}
+Email: {email}
+Phone: {phone}
+
+LOAN DETAILS
+Loan purpose: {loan_purpose}
+Property location: {property_location}
+Estimated purchase price / home value: {format_currency(target_price)}
+Estimated credit range: {credit_range}
+
+CALCULATOR SNAPSHOT
+Purchase price used: {format_currency(purchase_price)}
+Down payment: {down_payment_percent:.2f}% / {format_currency(down_payment_amount)}
+Estimated loan amount: {format_currency(loan_amount)}
+Interest rate used: {annual_rate:.3f}%
+Loan term: {loan_term_years} years
+Principal & interest: {format_currency(monthly_pi)}
+PMI / MI: {format_currency(monthly_pmi)} / month
+Estimated total monthly payment: {format_currency(estimated_total_payment)}
+
+BORROWER MESSAGE
+{message if message.strip() else "No additional message provided."}
+
+COMPLIANCE NOTE
+The borrower consented to be contacted and acknowledged this is not a loan application or approval.
+"""
+
+        try:
+            send_email(
+                subject=subject,
+                body=email_body,
+                reply_to=email
+            )
+            st.success(
+                "Your request was submitted successfully. A licensed mortgage professional will follow up."
+            )
+        except Exception as exc:
+            st.error(
+                "The form was completed, but the email could not be sent. "
+                "Please check the SMTP configuration."
+            )
+            st.exception(exc)
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Footer disclosures
+
+st.divider()
+
+st.markdown(
+    f"""
+    <div class="footer-note">
+        {COMPANY_NAME} | {MLO_NAME} | {NMLS_ID} | {FL_LICENSE}. Licensed mortgage activity is subject to
+        applicable federal and Florida law. Calculator results are estimates only and do not include all possible
+        costs, fees, escrows, points, lender credits, APR, prepaid items, flood insurance, condo assessments,
+        or program-specific mortgage insurance.
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
