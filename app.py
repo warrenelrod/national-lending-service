@@ -6,6 +6,81 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+import streamlit.components.v1 as components
+
+components.html(
+    """
+    <script>
+    const pushViewportLog = (message, data = {}) => {
+        const timestamp = new Date().toLocaleTimeString();
+
+        const payload = {
+            time: timestamp,
+            message,
+            ...data,
+        };
+
+        console.log(`[viewport] ${message}:`, payload);
+
+        const parentDoc = window.parent.document;
+        const output = parentDoc.getElementById("viewport-console-output");
+
+        if (output) {
+            output.textContent =
+                JSON.stringify(payload, null, 2) +
+                "\\n\\n" +
+                output.textContent;
+        }
+    };
+
+    const logViewportChange = () => {
+        const vv = window.visualViewport;
+
+        const layoutHeight = window.innerHeight;
+        const visualHeight = vv ? vv.height : window.innerHeight;
+        const previousVisualHeight = window.__lastVisualHeight || visualHeight;
+        const availableGain = visualHeight - previousVisualHeight;
+
+        const data = {
+            previousVisualHeight,
+            currentVisualHeight: visualHeight,
+            gainedPixels: availableGain,
+            layoutHeight,
+            offsetTop: vv ? vv.offsetTop : 0,
+            scale: vv ? vv.scale : 1,
+        };
+
+        if (availableGain > 0) {
+            pushViewportLog("More screen space available", data);
+        } else if (availableGain < 0) {
+            pushViewportLog("Less screen space available", data);
+        } else {
+            pushViewportLog("Viewport event, no height change", data);
+        }
+
+        window.__lastVisualHeight = visualHeight;
+    };
+
+    window.__lastVisualHeight = window.visualViewport
+        ? window.visualViewport.height
+        : window.innerHeight;
+
+    pushViewportLog("Initial", {
+        visualHeight: window.__lastVisualHeight,
+        innerHeight: window.innerHeight,
+    });
+
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", logViewportChange);
+        window.visualViewport.addEventListener("scroll", logViewportChange);
+    }
+
+    window.addEventListener("resize", logViewportChange);
+    </script>
+    """,
+    height=0,
+)
+
 st.markdown(
     """
     <style>
@@ -83,6 +158,31 @@ st.markdown(
 
         padding: 1.25rem 0;
         box-sizing: border-box;
+    }
+
+    .viewport-debug-card {
+        background: rgba(0, 0, 0, 0.72);
+        color: #d8ffdf;
+        border-radius: 18px;
+        padding: 1rem;
+        margin-top: 0.85rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        box-shadow: 0 14px 34px rgba(0,0,0,0.18);
+    }
+
+    .viewport-debug-title {
+        color: white;
+        font-size: 0.9rem;
+        font-weight: 850;
+        margin-bottom: 0.6rem;
+    }
+
+    #viewport-console-output {
+        white-space: pre-wrap;
+        font-size: 0.72rem;
+        line-height: 1.35;
+        max-height: 160px;
+        overflow-y: auto;
     }
 
     header, footer {
@@ -428,6 +528,16 @@ with st.container(key="breakdown_section"):
                 <div class="metric-label">Total Principal + Interest</div>
                 <div class="metric-value">${total_paid:,.0f}</div>
             </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """
+        <div class="viewport-debug-card">
+            <div class="viewport-debug-title">Viewport console</div>
+            <pre id="viewport-console-output">Waiting for viewport changes...</pre>
         </div>
         """,
         unsafe_allow_html=True,
