@@ -358,7 +358,7 @@ st.markdown(
         pointer-events: none;
       }
 
-      .hero-kicker {
+      /*.hero-kicker {
         position: relative;
         display: inline-flex;
         align-items: center;
@@ -372,7 +372,7 @@ st.markdown(
         font-weight: 850;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-      }
+      }*/
 
       .hero-brand-row {
         position: relative;
