@@ -327,6 +327,10 @@ st.markdown(
 
 
 
+
+
+
+
       .hero-card {
         position: relative;
         overflow: hidden;
@@ -462,6 +466,150 @@ st.markdown(
       }
 
 
+
+
+      .contact-card {
+        color: white;
+        border-radius: 28px;
+        padding: 1.1rem;
+        background:
+          linear-gradient(
+            145deg,
+            rgba(255,255,255,0.18) 0%,
+            rgba(255,255,255,0.08) 44%,
+            rgba(255,255,255,0.04) 100%
+          );
+        border: 1px solid rgba(255,255,255,0.22);
+        box-shadow: 0 24px 70px rgba(0,0,0,0.22);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+      }
+
+      .section-kicker {
+        display: inline-flex;
+        width: fit-content;
+        margin-bottom: 0.75rem;
+        padding: 0.42rem 0.68rem;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.14);
+        color: rgba(255,255,255,0.84);
+        font-size: 0.68rem;
+        font-weight: 850;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .contact-title {
+        margin: 0;
+        max-width: 11ch;
+        font-size: 2.4rem;
+        line-height: 0.95;
+        letter-spacing: -0.04em;
+        font-weight: 650;
+      }
+
+      .contact-copy {
+        margin: 0.8rem 0 1rem;
+        color: rgba(255,255,255,0.76);
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+
+      .lead-form {
+        display: grid;
+        gap: 0.7rem;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.65rem;
+      }
+
+      .form-field {
+        min-width: 0;
+      }
+
+      .form-field label {
+        color: rgba(255,255,255,0.86);
+        font-size: 0.76rem;
+        margin-bottom: 0.28rem;
+      }
+
+      .form-field input,
+      .form-field select,
+      .form-field textarea {
+        width: 100%;
+        min-width: 0;
+        border: none;
+        outline: none;
+        background: rgba(255,255,255,0.9);
+        color: #111;
+        border-radius: 12px;
+        padding: 0.56rem 0.62rem;
+        font-size: 0.88rem;
+        font-weight: 750;
+      }
+
+      .form-field input,
+      .form-field select {
+        height: 2.3rem;
+      }
+
+      .form-field textarea {
+        resize: none;
+        line-height: 1.35;
+        font-weight: 650;
+      }
+
+      .consent-row {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.55rem;
+        align-items: flex-start;
+        margin: 0.15rem 0 0;
+        color: rgba(255,255,255,0.72);
+        font-size: 0.7rem;
+        line-height: 1.35;
+      }
+
+      .consent-row input {
+        margin-top: 0.12rem;
+        accent-color: #4C58F1;
+      }
+
+      .submit-button {
+        width: 100%;
+        height: 2.65rem;
+        border: none;
+        border-radius: 14px;
+        background: white;
+        color: #24147f;
+        font-size: 0.95rem;
+        font-weight: 900;
+        cursor: pointer;
+        box-shadow: 0 14px 30px rgba(0,0,0,0.16);
+      }
+
+      .form-status {
+        min-height: 1rem;
+        color: rgba(255,255,255,0.82);
+        font-size: 0.74rem;
+        text-align: center;
+      }
+
+      .footer-note {
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid rgba(255,255,255,0.16);
+        color: rgba(255,255,255,0.58);
+        font-size: 0.64rem;
+        line-height: 1.35;
+      }
+
+
+
+
       @media (max-width: 430px) {
         .glass-card {
           padding-left: 0.8rem;
@@ -487,6 +635,9 @@ st.markdown(
           font-size: 3.35rem;
         }
 
+
+
+
         .hero-card {
           padding: 1.1rem;
         }
@@ -498,6 +649,28 @@ st.markdown(
         .hero-badges {
           grid-template-columns: 1fr;
         }
+
+
+
+        .contact-title {
+          font-size: 2.05rem;
+        }
+
+        .form-grid {
+          grid-template-columns: 1fr;
+          gap: 0.55rem;
+        }
+
+        .contact-card {
+          padding: 0.95rem;
+        }
+
+        .form-field input,
+        .form-field select {
+          height: 2.2rem;
+        }
+
+
       }
     </style>
     """,
@@ -615,10 +788,116 @@ html = f"""
   </section>
 
   <section class="snap-page">
-    <div class="phone-width dummy-page">
-      <h2>Contact Form</h2>
-      <p>Dummy page.</p>
-      <div class="snap-hint">Swipe down to go back</div>
+    <div class="phone-width">
+      <div class="contact-card">
+        <div class="section-kicker">Consultation request</div>
+
+        <h2 class="contact-title">Request a mortgage consultation.</h2>
+
+        <p class="contact-copy">
+          Submit your information and a licensed loan originator serving {SERVICE_AREA} will follow up.
+        </p>
+
+        <form id="leadForm" class="lead-form">
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="firstName">First name *</label>
+              <input id="firstName" name="firstName" type="text" autocomplete="given-name" />
+            </div>
+
+            <div class="form-field">
+              <label for="lastName">Last name *</label>
+              <input id="lastName" name="lastName" type="text" autocomplete="family-name" />
+            </div>
+
+            <div class="form-field">
+              <label for="email">Email *</label>
+              <input id="email" name="email" type="email" autocomplete="email" />
+            </div>
+
+            <div class="form-field">
+              <label for="phone">Phone *</label>
+              <input id="phone" name="phone" type="tel" autocomplete="tel" />
+            </div>
+
+            <div class="form-field">
+              <label for="loanPurpose">Loan purpose *</label>
+              <select id="loanPurpose" name="loanPurpose">
+                <option value="Purchase">Purchase</option>
+                <option value="Refinance">Refinance</option>
+                <option value="Cash-out refinance">Cash-out refinance</option>
+                <option value="HELOC / second mortgage">HELOC / second mortgage</option>
+                <option value="Not sure yet">Not sure yet</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label for="propertyLocation">Property city / county</label>
+              <input
+                id="propertyLocation"
+                name="propertyLocation"
+                type="text"
+                value="Pinellas County, FL"
+              />
+            </div>
+
+            <div class="form-field">
+              <label for="targetPrice">Estimated price / value</label>
+              <input
+                id="targetPrice"
+                name="targetPrice"
+                type="text"
+                inputmode="numeric"
+                value="${DEFAULT_LOAN_AMOUNT:,}"
+              />
+            </div>
+
+            <div class="form-field">
+              <label for="leadCreditRange">Credit score range</label>
+              <select id="leadCreditRange" name="leadCreditRange">
+                <option value="760+">760+</option>
+                <option value="720-759">720-759</option>
+                <option value="680-719">680-719</option>
+                <option value="640-679">640-679</option>
+                <option value="600-639">600-639</option>
+                <option value="Below 600">Below 600</option>
+                <option value="Not sure / prefer not to say">Not sure / prefer not to say</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="message">Anything else you want the MLO to know?</label>
+            <textarea
+              id="message"
+              name="message"
+              rows="3"
+              placeholder="Example: first-time buyer, VA loan, condo, self-employed, relocating, etc."
+            ></textarea>
+          </div>
+
+          <label class="consent-row" for="consent">
+            <input id="consent" name="consent" type="checkbox" />
+            <span>
+              I consent to be contacted by phone, email, or text about mortgage financing.
+              Message/data rates may apply. I understand this is not a loan application or approval.
+            </span>
+          </label>
+
+          <button class="submit-button" type="submit">Submit request</button>
+
+          <div class="form-status" id="formStatus" aria-live="polite"></div>
+        </form>
+
+        <div class="footer-note">
+          {COMPANY_NAME} | {MLO_NAME} | {NMLS_ID} | {FL_LICENSE}. Licensed mortgage activity is subject to
+          applicable federal and Florida law. Calculator results are estimates only and do not include all possible
+          costs, fees, escrows, points, lender credits, APR, prepaid items, flood insurance, condo assessments,
+          or program-specific mortgage insurance.
+        </div>
+
+        <div class="snap-hint">Swipe down to go back</div>
+      </div>
     </div>
   </section>
 
