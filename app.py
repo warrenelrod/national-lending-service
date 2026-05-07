@@ -86,7 +86,9 @@ html = f"""
     width: 100vw;
     height: 100dvh;
     overflow: hidden;
+    cursor: grab;
     touch-action: none;
+    user-select: none;
     background:
       radial-gradient(
         ellipse 90% 100% at 80% 10%,
@@ -104,12 +106,20 @@ html = f"""
       );
   }}
 
+  .page-shell.is-dragging {{
+    cursor: grabbing;
+  }}
+
   .page-track {{
     width: 100%;
     height: 100%;
     transform: translate3d(0, 0, 0);
     transition: transform 560ms cubic-bezier(.22, 1, .36, 1);
     will-change: transform;
+  }}
+
+  .page-track.is-dragging {{
+    transition: none;
   }}
 
   .snap-page {{
@@ -180,6 +190,7 @@ html = f"""
     padding: 0.55rem 0.6rem;
     font-size: 1rem;
     font-weight: 750;
+    user-select: auto;
   }}
 
   .pill-row {{
@@ -324,7 +335,7 @@ html = f"""
               <div class="field">
                 <label for="creditRange">Credit Score</label>
                 <select id="creditRange">
-                  {"".join(f'<option value="{c}">{c}</option>' for c in credit_ranges)}
+                  {"".join(f'<option value="{credit}">{credit}</option>' for credit in credit_ranges)}
                 </select>
               </div>
             </div>
@@ -333,14 +344,14 @@ html = f"""
               <div class="field">
                 <label for="loanType">Loan Type</label>
                 <select id="loanType">
-                  {"".join(f'<option value="{t}">{t}</option>' for t in loan_types)}
+                  {"".join(f'<option value="{loan_type}">{loan_type}</option>' for loan_type in loan_types)}
                 </select>
               </div>
 
               <div class="field">
                 <label for="loanTerm">Loan Term</label>
                 <select id="loanTerm">
-                  {"".join(f'<option value="{t}" {"selected" if t == 30 else ""}>{t} years</option>' for t in term_years)}
+                  {"".join(f'<option value="{term}" {"selected" if term == 30 else ""}>{term} years</option>' for term in term_years)}
                 </select>
               </div>
             </div>
@@ -378,6 +389,7 @@ html = f"""
 
 <script>
   const rateMap = {json.dumps(rate_map)};
+  const pageShell = document.getElementById("pageShell");
   const pageTrack = document.getElementById("pageTrack");
   const pages = Array.from(document.querySelectorAll(".snap-page"));
 
@@ -397,7 +409,17 @@ html = f"""
 
   let currentPage = 0;
   let isAnimating = false;
-  let touchStartY = 0;
+  let isDragging = false;
+  let pointerId = null;
+  let dragStartY = 0;
+  let dragDeltaY = 0;
+  let lastPointerY = 0;
+  let lastPointerTime = 0;
+  let dragVelocityY = 0;
+
+  function getViewportHeight() {{
+    return window.innerHeight || document.documentElement.clientHeight;
+  }}
 
   function monthlyPayment(principal, annualRate, years) {{
     const monthlyRate = annualRate / 100 / 12;
@@ -430,20 +452,28 @@ html = f"""
     monthlyPaymentEl.textContent = currency.format(payment);
   }}
 
-  function renderPage() {{
-    pageTrack.style.transform = `translate3d(0, -${{currentPage * 100}}dvh, 0)`;
+  function setTrackTransform(offsetY = 0) {{
+    const pageOffsetY = -currentPage * getViewportHeight();
+    pageTrack.style.transform = `translate3d(0, ${{pageOffsetY + offsetY}}px, 0)`;
+  }}
+
+  function setDraggingState(enabled) {{
+    isDragging = enabled;
+    pageShell.classList.toggle("is-dragging", enabled);
+    pageTrack.classList.toggle("is-dragging", enabled);
   }}
 
   function goToPage(nextPage) {{
     const clampedPage = Math.max(0, Math.min(nextPage, pages.length - 1));
 
-    if (clampedPage === currentPage || isAnimating) {{
+    if (clampedPage === currentPage && !isDragging) {{
       return;
     }}
 
     currentPage = clampedPage;
     isAnimating = true;
-    renderPage();
+    setDraggingState(false);
+    setTrackTransform();
 
     window.setTimeout(() => {{
       isAnimating = false;
@@ -454,6 +484,13 @@ html = f"""
     return Boolean(target.closest("input, select, textarea, button, label"));
   }}
 
+  function dampenBoundaryDrag(deltaY) {{
+    const isPastFirstPage = currentPage === 0 && deltaY > 0;
+    const isPastLastPage = currentPage === pages.length - 1 && deltaY < 0;
+
+    return isPastFirstPage || isPastLastPage ? deltaY * 0.28 : deltaY;
+  }}
+
   function handleWheel(event) {{
     if (isInteractiveElement(event.target)) {{
       return;
@@ -461,41 +498,82 @@ html = f"""
 
     event.preventDefault();
 
-    if (isAnimating || Math.abs(event.deltaY) < 8) {{
+    if (isAnimating || isDragging || Math.abs(event.deltaY) < 8) {{
       return;
     }}
 
     goToPage(currentPage + Math.sign(event.deltaY));
   }}
 
-  function handleTouchStart(event) {{
-    if (isInteractiveElement(event.target)) {{
+  function handlePointerDown(event) {{
+    if (isInteractiveElement(event.target) || isAnimating) {{
       return;
     }}
 
-    touchStartY = event.touches[0].clientY;
+    pointerId = event.pointerId;
+    dragStartY = event.clientY;
+    dragDeltaY = 0;
+    lastPointerY = event.clientY;
+    lastPointerTime = performance.now();
+    dragVelocityY = 0;
+
+    pageShell.setPointerCapture(pointerId);
+    setDraggingState(true);
   }}
 
-  function handleTouchMove(event) {{
-    if (!isInteractiveElement(event.target)) {{
-      event.preventDefault();
+  function handlePointerMove(event) {{
+    if (!isDragging || event.pointerId !== pointerId) {{
+      return;
     }}
+
+    event.preventDefault();
+
+    const now = performance.now();
+    const elapsed = Math.max(1, now - lastPointerTime);
+    const pointerDeltaY = event.clientY - lastPointerY;
+
+    dragVelocityY = pointerDeltaY / elapsed;
+    dragDeltaY = dampenBoundaryDrag(event.clientY - dragStartY);
+    lastPointerY = event.clientY;
+    lastPointerTime = now;
+
+    setTrackTransform(dragDeltaY);
   }}
 
-  function handleTouchEnd(event) {{
-    if (isInteractiveElement(event.target)) {{
+  function handlePointerUp(event) {{
+    if (!isDragging || event.pointerId !== pointerId) {{
       return;
     }}
 
-    const touchEndY = event.changedTouches[0].clientY;
-    const deltaY = touchStartY - touchEndY;
-    const swipeThreshold = 45;
+    const viewportHeight = getViewportHeight();
+    const distanceThreshold = Math.min(140, viewportHeight * 0.18);
+    const velocityThreshold = 0.55;
 
-    if (Math.abs(deltaY) < swipeThreshold) {{
+    let pageDirection = 0;
+
+    if (Math.abs(dragDeltaY) > distanceThreshold || Math.abs(dragVelocityY) > velocityThreshold) {{
+      pageDirection = dragDeltaY < 0 ? 1 : -1;
+    }}
+
+    if (pageShell.hasPointerCapture(pointerId)) {{
+      pageShell.releasePointerCapture(pointerId);
+    }}
+
+    pointerId = null;
+    goToPage(currentPage + pageDirection);
+  }}
+
+  function handlePointerCancel(event) {{
+    if (!isDragging || event.pointerId !== pointerId) {{
       return;
     }}
 
-    goToPage(currentPage + Math.sign(deltaY));
+    if (pageShell.hasPointerCapture(pointerId)) {{
+      pageShell.releasePointerCapture(pointerId);
+    }}
+
+    pointerId = null;
+    goToPage(currentPage);
   }}
 
   [
@@ -509,12 +587,14 @@ html = f"""
   }});
 
   window.addEventListener("wheel", handleWheel, {{ passive: false }});
-  window.addEventListener("touchstart", handleTouchStart, {{ passive: true }});
-  window.addEventListener("touchmove", handleTouchMove, {{ passive: false }});
-  window.addEventListener("touchend", handleTouchEnd, {{ passive: true }});
+  pageShell.addEventListener("pointerdown", handlePointerDown);
+  pageShell.addEventListener("pointermove", handlePointerMove);
+  pageShell.addEventListener("pointerup", handlePointerUp);
+  pageShell.addEventListener("pointercancel", handlePointerCancel);
+  window.addEventListener("resize", () => setTrackTransform());
 
   updateCalculator();
-  renderPage();
+  setTrackTransform();
 </script>
 """
 
