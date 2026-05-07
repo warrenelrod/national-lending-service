@@ -350,6 +350,13 @@ st.markdown(
 html = f"""
 <div class="snap-app">
   <section class="snap-page">
+    <div class="phone-width dummy-page">
+      <h2>Landing Page</h2>
+      <p>Dummy page.</p>
+    </div>
+  </section>
+
+  <section class="snap-page">
     <div class="phone-width">
       <div class="title">Mortgage<br>Calculator</div>
 
