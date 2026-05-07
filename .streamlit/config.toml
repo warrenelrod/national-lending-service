@@ -6,3 +6,6 @@
 
 [theme]
 base="light"
+
+[server]
+runOnSave = true

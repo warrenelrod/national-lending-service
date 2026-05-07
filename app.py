@@ -21,7 +21,20 @@ st.markdown(
         height: 100dvh;
         overflow: hidden;
         background:
-            linear-gradient(180deg, #20209b 0%, #3432d0 34%, #f3f3f8 68%, #fafafa 100%);
+            radial-gradient(
+                circle at 95% 6%,
+                rgba(125, 108, 255, 0.38) 0%,
+                rgba(91, 72, 220, 0.24) 28%,
+                rgba(50, 35, 140, 0.12) 52%,
+                rgba(11, 8, 40, 0) 78%
+            ),
+            linear-gradient(
+                180deg,
+                #1b0f68 0%,
+                #24147f 34%,
+                #171052 58%,
+                #07051f 100%
+            );
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
     }
 
@@ -86,7 +99,7 @@ st.markdown(
         margin-bottom: 1.2rem !important;
     }
 
-    .glass-card {
+    .st-key-glass_card {
         background: rgba(255, 255, 255, 0.74);
         backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
@@ -209,7 +222,7 @@ st.markdown(
 
     .dark-hint {
         text-align: center;
-        color: rgba(0,0,0,.55);
+        color: rgba(255,255,255,.72);
         font-size: 0.82rem;
         margin-top: 1rem;
     }
@@ -269,66 +282,81 @@ if "taxes_insurance" not in st.session_state:
 
 
 with st.container(key="input_section"):
-    st.markdown("# Mortgage<br>Calculator", unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div style="padding-left: 0.6rem;">
+            <span style="
+                font-family: Arial, Helvetica, sans-serif;
+                letter-spacing: 1px;
+                color: #FFFFFF;
+                font-weight: 600;
+                font-size: 44px;
+                line-height: 1.1;
+            ">
+                Mortgage<br>Calculator
+            </span>
+        </div>
+        """,
+            unsafe_allow_html=True
+        )
 
     st.markdown('<div class="glass-card">', unsafe_allow_html=True)
 
-    loan_amount = st.number_input(
-        "Loan Amount",
-        min_value=50_000,
-        max_value=3_000_000,
-        value=st.session_state.loan_amount,
-        step=5_000,
-        format="%d",
-        key="loan_amount_widget",
-    )
+    with st.container(key="glass_card"):
+        col1, col2 = st.columns(2)
 
-    col1, col2 = st.columns(2)
+        with col1:
+            loan_amount = st.number_input(
+                "Loan Amount",
+                min_value=50_000,
+                max_value=3_000_000,
+                value=st.session_state.loan_amount,
+                step=5_000,
+                format="%d",
+                key="loan_amount_widget",
+            )
 
-    with col1:
-        interest_rate = st.selectbox(
-            "Interest Rate",
-            options=[4.875, 5.125, 5.500, 5.875, 6.125, 6.500, 6.875, 7.125, 7.500],
-            index=[4.875, 5.125, 5.500, 5.875, 6.125, 6.500, 6.875, 7.125, 7.500].index(
-                st.session_state.interest_rate
-            ),
-            format_func=lambda x: f"{x:.3f}%",
-            key="interest_rate_widget",
+            interest_rate = st.selectbox(
+                "Interest Rate",
+                options=[4.875, 5.125, 5.500, 5.875, 6.125, 6.500, 6.875, 7.125, 7.500],
+                index=[4.875, 5.125, 5.500, 5.875, 6.125, 6.500, 6.875, 7.125, 7.500].index(
+                    st.session_state.interest_rate
+                ),
+                format_func=lambda x: f"{x:.3f}%",
+                key="interest_rate_widget",
+            )
+
+        with col2:
+            loan_term = st.selectbox(
+                "Loan Term",
+                options=[10, 15, 20, 25, 30],
+                index=[10, 15, 20, 25, 30].index(st.session_state.loan_term),
+                format_func=lambda x: f"{x} years",
+                key="loan_term_widget",
+            )
+
+        down_payment_pct = st.slider(
+            "Down Payment",
+            min_value=0,
+            max_value=50,
+            value=st.session_state.down_payment_pct,
+            step=1,
+            format="%d%%",
+            key="down_payment_widget",
         )
 
-    with col2:
-        loan_term = st.selectbox(
-            "Loan Term",
-            options=[10, 15, 20, 25, 30],
-            index=[10, 15, 20, 25, 30].index(st.session_state.loan_term),
-            format_func=lambda x: f"{x} years",
-            key="loan_term_widget",
+        down_payment = loan_amount * down_payment_pct / 100
+        principal = loan_amount - down_payment
+
+        st.markdown(
+            f"""
+            <div class="pill-row">
+                <div class="blue-pill">${down_payment:,.0f}</div>
+                <div class="white-pill">{down_payment_pct}%</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
-
-    down_payment_pct = st.slider(
-        "Down Payment",
-        min_value=0,
-        max_value=50,
-        value=st.session_state.down_payment_pct,
-        step=1,
-        format="%d%%",
-        key="down_payment_widget",
-    )
-
-    down_payment = loan_amount * down_payment_pct / 100
-    principal = loan_amount - down_payment
-
-    st.markdown(
-        f"""
-        <div class="pill-row">
-            <div class="blue-pill">${down_payment:,.0f}</div>
-            <div class="white-pill">{down_payment_pct}%</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown('<div class="snap-hint">Swipe up for payment ↓</div>', unsafe_allow_html=True)
 
