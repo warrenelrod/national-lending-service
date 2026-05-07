@@ -527,8 +527,8 @@ html = f"""
         </p>
 
         <div class="hero-badges">
-          <div class="hero-badge">🏢 {COMPANY_NAME}</div>
-          <div class="hero-badge">👤 {MLO_NAME}</div>
+          <!-- <div class="hero-badge">🏢 {COMPANY_NAME}</div> -->
+          <!-- <div class="hero-badge">👤 {MLO_NAME}</div> -->
           <div class="hero-badge">📋 {NMLS_ID}</div>
           <div class="hero-badge">📍 {FL_LICENSE}</div>
         </div>
