@@ -11,29 +11,14 @@ st.markdown(
     <style>
     html,
     body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
         height: 100%;
-        min-height: 100%;
         overflow: hidden;
         overscroll-behavior: none;
-        background: #07051f !important;
     }
 
-    body {
-        position: relative;
-        -webkit-overflow-scrolling: auto;
-    }
-
-    html::before,
-    body::before,
-    .stApp::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        z-index: -1;
-        pointer-events: none;
+    .stApp {
+        height: 100dvh;
+        overflow: hidden;
         background:
             radial-gradient(
                 circle at 95% 6%,
@@ -49,14 +34,6 @@ st.markdown(
                 #171052 58%,
                 #07051f 100%
             );
-    }
-
-    .stApp {
-        height: 100svh;
-        min-height: 100svh;
-        max-height: 100svh;
-        overflow: hidden;
-        background: #07051f !important;
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
     }
 
@@ -64,20 +41,12 @@ st.markdown(
     div[data-testid="stAppViewContainer"],
     div[data-testid="stMain"],
     div[data-testid="stMainBlockContainer"] {
-        height: 100svh;
-        min-height: 100svh;
-        max-height: 100svh;
-        overflow: hidden;
-        background: transparent !important;
+        height: 100dvh;
     }
 
     .block-container {
         max-width: 430px;
-
-        height: 100svh;
-        min-height: 100svh;
-        max-height: 100svh;
-
+        height: 100dvh;
         overflow-y: scroll;
         overflow-x: hidden;
 
@@ -86,17 +55,12 @@ st.markdown(
         scroll-behavior: auto;
 
         padding-top: 0rem;
-        padding-bottom: max(0rem, env(safe-area-inset-bottom));
+        padding-bottom: 0rem;
         padding-left: 1rem;
         padding-right: 1rem;
 
-        box-sizing: border-box;
-
-        -webkit-overflow-scrolling: touch;
+        -webkit-overflow-scrolling: auto;
         overscroll-behavior-y: contain;
-
-        background: transparent !important;
-        scrollbar-width: none;
     }
 
     .block-container::-webkit-scrollbar {
@@ -106,9 +70,9 @@ st.markdown(
     .st-key-input_section,
     .st-key-result_section,
     .st-key-breakdown_section {
-        height: 100svh;
-        min-height: 100svh;
-        max-height: 100svh;
+        height: 100dvh;
+        min-height: 100dvh;
+        max-height: 100dvh;
 
         scroll-snap-align: start;
         scroll-snap-stop: always;
@@ -119,22 +83,10 @@ st.markdown(
 
         padding: 1.25rem 0;
         box-sizing: border-box;
-        background: transparent !important;
     }
 
-    header,
-    footer,
-    [data-testid="stHeader"],
-    [data-testid="stToolbar"],
-    [data-testid="stDecoration"],
-    [data-testid="stStatusWidget"],
-    #MainMenu {
-        display: none !important;
-        visibility: hidden !important;
-        height: 0 !important;
-        min-height: 0 !important;
-        max-height: 0 !important;
-        background: transparent !important;
+    header, footer {
+        visibility: hidden;
     }
 
     h1 {
@@ -164,10 +116,7 @@ st.markdown(
         box-shadow: 0 14px 34px rgba(0,0,0,0.08);
     }
 
-    label,
-    .stSlider label,
-    .stSelectbox label,
-    .stNumberInput label {
+    label, .stSlider label, .stSelectbox label, .stNumberInput label {
         color: #151515 !important;
         font-size: 0.95rem !important;
         font-weight: 750 !important;
