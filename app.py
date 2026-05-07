@@ -1,5 +1,8 @@
 import streamlit as st
 
+from utils import term_years, annual_rate, monthly_payment
+
+
 st.set_page_config(
     page_title="Mortgage Calculator",
     layout="centered",
@@ -140,23 +143,58 @@ st.markdown(
         color: #111 !important;
     }
 
-    .stSlider [role="slider"] {
-        background-color: #4156f4 !important;
-        border: 3px solid white !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,.25);
+
+    /* Slider spacing */
+    .stSlider div[data-baseweb="slider"] > div {
+        padding-top: 0.45rem;
     }
 
-    .stSlider [data-testid="stThumbValue"] {
+    /* Bigger flat knob */
+    .stSlider div[data-baseweb="slider"] div[role="slider"] {
+        width: 26px !important;
+        height: 26px !important;
         background: #4156f4 !important;
-        color: white !important;
-        border-radius: 8px !important;
-        font-weight: 800 !important;
+        border: 3px solid white !important;
+        box-shadow: none !important;
+    }
+
+    /* Hide the floating value bubble */
+    .stSlider [data-testid="stThumbValue"] {
+        display: none !important;
+    }
+
+    /* Unfilled/base track */
+    .stSlider div[data-baseweb="slider"] > div > div {
+        background: rgba(27, 15, 104, 0.18) !important;
+    }
+
+    /* Filled track */
+    .stSlider div[data-baseweb="slider"] > div > div > div {
+        background: #4156f4 !important;
+    }
+
+    .pill-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .pill-label {
+        color: #151515;
+        font-size: 0.95rem;
+        font-weight: 750;
+        line-height: 1;
     }
 
     .pill-row {
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-end;
+        margin-top: 0.35rem;
+        margin-bottom: 1.3rem;
+    }
+
+    .stSlider {
         margin-top: -0.25rem;
     }
 
@@ -252,23 +290,12 @@ st.markdown(
 )
 
 
-def monthly_payment(principal, annual_rate, years):
-    monthly_rate = annual_rate / 100 / 12
-    months = years * 12
-
-    if monthly_rate == 0:
-        return principal / months
-
-    return principal * (monthly_rate * (1 + monthly_rate) ** months) / (
-        (1 + monthly_rate) ** months - 1
-    )
-
 
 if "loan_amount" not in st.session_state:
     st.session_state.loan_amount = 425_000
 
-if "interest_rate" not in st.session_state:
-    st.session_state.interest_rate = 6.875
+# if "interest_rate" not in st.session_state:
+#     st.session_state.interest_rate = 6.875
 
 if "loan_term" not in st.session_state:
     st.session_state.loan_term = 30
@@ -299,8 +326,6 @@ with st.container(key="input_section"):
             unsafe_allow_html=True
         )
 
-    # st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-
     with st.container(key="glass_card"):
         col1, col2 = st.columns(2)
 
@@ -315,50 +340,72 @@ with st.container(key="input_section"):
                 key="loan_amount_widget",
             )
 
-            interest_rate = st.selectbox(
-                "Interest Rate",
-                options=[4.875, 5.125, 5.500, 5.875, 6.125, 6.500, 6.875, 7.125, 7.500],
-                index=[4.875, 5.125, 5.500, 5.875, 6.125, 6.500, 6.875, 7.125, 7.500].index(
-                    st.session_state.interest_rate
-                ),
-                format_func=lambda x: f"{x:.3f}%",
-                key="interest_rate_widget",
+            credit_range = st.selectbox(
+                "Credit Score",
+                options=[
+                    "760+",
+                    "720-759",
+                    "680-719",
+                    "640-679",
+                    "600-639",
+                    "Below 600",
+                ],
+                key="credit_range_widget",
             )
 
-        # with col2:
-        #     loan_term = st.selectbox(
-        #         "Loan Term",
-        #         options=[10, 15, 20, 25, 30],
-        #         index=[10, 15, 20, 25, 30].index(st.session_state.loan_term),
-        #         format_func=lambda x: f"{x} years",
-        #         key="loan_term_widget",
-        #     )
+        with col2:
+            loan_type = st.selectbox(
+                "Loan Type",
+                options=[
+                    "Fixed",
+                    "FHA",
+                    "VA",
+                ],
+                key="loan_type_widget",
+            )
 
-        loan_term = 30
+            loan_term = st.selectbox(
+                "Loan Term",
+                options=term_years,
+                index=term_years.index(st.session_state.loan_term),
+                format_func=lambda x: f"{x} years",
+                key="loan_term_widget",
+            )
 
-        down_payment_pct = st.slider(
-            "Down Payment",
-            min_value=0,
-            max_value=50,
-            value=st.session_state.down_payment_pct,
-            step=1,
-            format="%d%%",
-            key="down_payment_widget",
+        down_payment_pct = st.session_state.get(
+            "down_payment_widget",
+            st.session_state.down_payment_pct,
         )
 
         down_payment = loan_amount * down_payment_pct / 100
-        principal = loan_amount - down_payment
 
         st.markdown(
             f"""
             <div class="pill-row">
-                <div class="blue-pill">${down_payment:,.0f}</div>
+                <div class="pill-stack">
+                    <div class="pill-label">Down Payment</div>
+                    <div class="blue-pill">${down_payment:,.0f}</div>
+                </div>
                 <div class="white-pill">{down_payment_pct}%</div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
+        down_payment_pct = st.slider(
+            "Down Payment",
+            min_value=0,
+            max_value=50,
+            value=down_payment_pct,
+            step=1,
+            format="%d%%",
+            key="down_payment_widget",
+            label_visibility="collapsed",
+        )
+
+        down_payment = loan_amount * down_payment_pct / 100
+        principal = loan_amount - down_payment
+        interest_rate = annual_rate(loan_term, credit_range)
         principal_interest = monthly_payment(principal, interest_rate, loan_term)
 
         st.markdown(
@@ -373,6 +420,23 @@ with st.container(key="input_section"):
         )
 
     st.markdown('<div class="snap-hint">Swipe up for payment ↑</div>', unsafe_allow_html=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 principal_interest = monthly_payment(principal, interest_rate, loan_term)
