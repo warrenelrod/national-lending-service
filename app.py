@@ -32,14 +32,15 @@ st.markdown(
     <style>
     html,
     body {
-        height: 100%;
-        overflow: hidden;
-        overscroll-behavior: none;
+        min-height: 101dvh;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior-y: none;
     }
 
     .stApp {
-        height: 100dvh;
-        overflow: hidden;
+        min-height: 101dvh;
+        overflow-x: hidden;
         background:
             radial-gradient(
                 circle at 95% 6%,
