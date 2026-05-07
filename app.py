@@ -89,7 +89,6 @@ html = f"""
     cursor: grab;
     touch-action: none;
     user-select: none;
-    -webkit-user-select: none;
     background:
       radial-gradient(
         ellipse 90% 100% at 80% 10%,
@@ -136,12 +135,6 @@ html = f"""
     width: 100%;
     max-width: 430px;
   }}
-
-  /*input,
-  textarea {{
-    user-select: text;
-    -webkit-user-select: text;
-  }}*/
 
   .title {{
     padding-left: 0.6rem;
