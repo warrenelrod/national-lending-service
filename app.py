@@ -10,16 +10,26 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    html,
+    html {
+        min-height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior-y: none;
+        background: #07051f;
+    }
+
     body {
-        height: 100vh;
-        overflow: hidden;
-        overscroll-behavior: none;
+        min-height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior-y: none;
+        background: #07051f;
     }
 
     .stApp {
-        height: 100dvh;
-        overflow: hidden;
+        min-height: 100svh;
+        height: auto;
+        overflow: visible;
         background:
             radial-gradient(
                 circle at 95% 6%,
@@ -35,6 +45,7 @@ st.markdown(
                 #171052 58%,
                 #07051f 100%
             );
+        background-attachment: fixed;
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
     }
 
@@ -42,26 +53,28 @@ st.markdown(
     div[data-testid="stAppViewContainer"],
     div[data-testid="stMain"],
     div[data-testid="stMainBlockContainer"] {
-        height: 100dvh;
+        min-height: 100svh;
+        height: auto;
+        overflow: visible;
+        background: transparent;
     }
 
     .block-container {
         max-width: 430px;
-        height: 100dvh;
-        overflow-y: scroll;
-        overflow-x: hidden;
+        min-height: 100svh;
+        height: auto;
+        overflow: visible;
 
         scroll-snap-type: y mandatory;
         scroll-padding: 0;
-        scroll-behavior: auto;
+        scroll-behavior: smooth;
 
         padding-top: 0rem;
         padding-bottom: 0rem;
         padding-left: 1rem;
         padding-right: 1rem;
 
-        -webkit-overflow-scrolling: auto;
-        overscroll-behavior-y: contain;
+        overscroll-behavior-y: none;
     }
 
     .block-container::-webkit-scrollbar {
@@ -71,9 +84,8 @@ st.markdown(
     .st-key-input_section,
     .st-key-result_section,
     .st-key-breakdown_section {
-        height: 100dvh;
-        min-height: 100dvh;
-        max-height: 100dvh;
+        height: 100svh;
+        min-height: 100svh;
 
         scroll-snap-align: start;
         scroll-snap-stop: always;
@@ -299,8 +311,6 @@ with st.container(key="input_section"):
         """,
             unsafe_allow_html=True
         )
-
-    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
 
     with st.container(key="glass_card"):
         col1, col2 = st.columns(2)
