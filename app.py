@@ -12,12 +12,27 @@ st.markdown(
     html,
     body {
         height: 100%;
+        margin: 0;
         overflow: hidden;
         overscroll-behavior: none;
+        background: #07051f;
+    }
+
+    /* Prefer stable viewport on mobile; avoid toolbar-driven white gaps */
+    :root {
+        --app-height: 100svh;
+    }
+
+    /* Fallback for browsers that do not support svh */
+    @supports not (height: 100svh) {
+        :root {
+            --app-height: 100vh;
+        }
     }
 
     .stApp {
-        height: 100dvh;
+        height: var(--app-height);
+        min-height: var(--app-height);
         overflow: hidden;
         background:
             radial-gradient(
@@ -41,25 +56,27 @@ st.markdown(
     div[data-testid="stAppViewContainer"],
     div[data-testid="stMain"],
     div[data-testid="stMainBlockContainer"] {
-        height: 100dvh;
+        height: var(--app-height);
+        min-height: var(--app-height);
+        overflow: hidden;
     }
 
     .block-container {
         max-width: 430px;
-        height: 130dvh;
-        overflow-y: scroll;
+        height: var(--app-height);
+        min-height: var(--app-height);
+
+        overflow-y: auto;
         overflow-x: hidden;
 
         scroll-snap-type: y mandatory;
         scroll-padding: 0;
-        scroll-behavior: auto;
+        scroll-behavior: smooth;
 
-        padding-top: 0rem;
-        padding-bottom: 0rem;
-        padding-left: 1rem;
-        padding-right: 1rem;
+        padding: 0 1rem !important;
+        box-sizing: border-box;
 
-        -webkit-overflow-scrolling: auto;
+        -webkit-overflow-scrolling: touch;
         overscroll-behavior-y: contain;
     }
 
@@ -70,9 +87,8 @@ st.markdown(
     .st-key-input_section,
     .st-key-result_section,
     .st-key-breakdown_section {
-        height: 130dvh;
-        min-height: 130dvh;
-        max-height: 130dvh;
+        height: var(--app-height);
+        min-height: var(--app-height);
 
         scroll-snap-align: start;
         scroll-snap-stop: always;
@@ -81,12 +97,14 @@ st.markdown(
         flex-direction: column;
         justify-content: center;
 
-        padding: 1.25rem 0;
+        padding-top: max(1.25rem, env(safe-area-inset-top));
+        padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
         box-sizing: border-box;
     }
 
-    header, footer {
-        visibility: hidden;
+    header,
+    footer {
+        display: none !important;
     }
 
     h1 {
@@ -367,6 +385,7 @@ with st.container(key="input_section"):
                 <div class="payment-title">Estimated Monthly Payment</div>
                 <div class="big-payment">${principal_interest:,.0f}</div>
                 <div class="subtle">principal + interest</div>
+            </div>
             """,
             unsafe_allow_html=True,
         )
@@ -384,6 +403,7 @@ with st.container(key="result_section"):
             <div class="payment-title">Estimated Monthly Payment</div>
             <div class="big-payment">${principal_interest:,.0f}</div>
             <div class="subtle">principal + interest</div>
+        </div>
         """,
         unsafe_allow_html=True,
     )
