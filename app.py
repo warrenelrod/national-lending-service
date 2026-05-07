@@ -6,54 +6,34 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-
-st.iframe(
-    """
-    <script>
-    function setAppHeight() {
-        const viewport = window.parent.visualViewport;
-        const height = viewport ? viewport.height : window.parent.innerHeight;
-        window.parent.document.documentElement.style.setProperty(
-            "--app-height",
-            `${height}px`
-        );
-    }
-
-    setAppHeight();
-
-    window.parent.addEventListener("resize", setAppHeight);
-    window.parent.visualViewport?.addEventListener("resize", setAppHeight);
-    window.parent.visualViewport?.addEventListener("scroll", setAppHeight);
-
-    setTimeout(() => {
-        window.parent.scrollTo(0, 1);
-        setAppHeight();
-    }, 300);
-    </script>
-    """,
-    height=1,
-)
-
-
 st.markdown(
     """
     <style>
-    :root {
-        --app-height: 100dvh;
+    html {
+        width: 100%;
+        min-height: 100%;
+        margin: 0;
+        padding: 0;
+
+        overflow-y: scroll;
+        overflow-x: hidden;
+
+        scroll-snap-type: y mandatory;
+        scroll-snap-stop: always;
+        scroll-behavior: smooth;
+
+        background: #07051f !important;
+        overscroll-behavior-y: none;
     }
 
-    html,
-    body,
-    #root,
-    [data-testid="stAppViewContainer"],
-    [data-testid="stMain"],
-    [data-testid="stMainBlockContainer"],
-    .stApp {
+    body {
         width: 100%;
-        height: var(--app-height) !important;
-        min-height: var(--app-height) !important;
-        max-height: var(--app-height) !important;
+        min-height: 300dvh;
         margin: 0;
+        padding: 0;
+
+        overflow-x: hidden;
+
         background:
             radial-gradient(
                 circle at 95% 6%,
@@ -69,54 +49,51 @@ st.markdown(
                 #171052 58%,
                 #07051f 100%
             ) !important;
+
+        background-attachment: fixed;
     }
 
-    html,
-    body {
-        overflow: hidden;
-        overscroll-behavior: none;
+    #root,
+    .stApp,
+    [data-testid="stAppViewContainer"],
+    [data-testid="stMain"],
+    [data-testid="stMainBlockContainer"] {
+        width: 100%;
+        min-height: 300dvh !important;
+        height: auto !important;
+        max-height: none !important;
+
+        overflow: visible !important;
+        background: transparent !important;
     }
 
     .stApp {
-        overflow: hidden;
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
     }
 
     .block-container {
         max-width: 430px;
 
-        height: var(--app-height) !important;
-        min-height: var(--app-height) !important;
-        max-height: var(--app-height) !important;
+        height: auto !important;
+        min-height: 300dvh !important;
+        max-height: none !important;
 
-        overflow-y: scroll;
-        overflow-x: hidden;
+        overflow: visible !important;
 
-        scroll-snap-type: y mandatory;
-        scroll-padding: 0;
-        scroll-behavior: auto;
-
-        padding-top: 0rem;
-        padding-bottom: 0rem;
-        padding-left: 1rem;
-        padding-right: 1rem;
-
-        -webkit-overflow-scrolling: touch;
-        overscroll-behavior-y: contain;
+        padding-top: 0rem !important;
+        padding-bottom: 0rem !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
 
         background: transparent !important;
-    }
-
-    .block-container::-webkit-scrollbar {
-        display: none;
     }
 
     .st-key-input_section,
     .st-key-result_section,
     .st-key-breakdown_section {
-        height: var(--app-height) !important;
-        min-height: var(--app-height) !important;
-        max-height: var(--app-height) !important;
+        height: 100dvh !important;
+        min-height: 100dvh !important;
+        max-height: 100dvh !important;
 
         scroll-snap-align: start;
         scroll-snap-stop: always;
@@ -127,6 +104,12 @@ st.markdown(
 
         padding: 1.25rem 0;
         box-sizing: border-box;
+    }
+
+    .st-key-input_section > div,
+    .st-key-result_section > div,
+    .st-key-breakdown_section > div {
+        width: 100%;
     }
 
     header, footer {
