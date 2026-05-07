@@ -640,3 +640,5 @@ st.html(html, unsafe_allow_javascript=True)
 #   scroll bar does not appear on desktop
 #   scrolling on ios still doesn't hide the toolbar
 #   tap the down payment dollar & percent labels to manually enter a value
+#   dollar & percent labels are not the same height
+#   dollar label title needs bottom margin
