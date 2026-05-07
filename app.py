@@ -13,8 +13,17 @@ st.set_page_config(
 st.markdown(
     """
     <style>
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        overflow-x: hidden;
+        background: #07051f;
+      }
+
       .stApp {
-        overflow: hidden;
+        min-height: 100svh;
+        overflow-x: hidden;
         background:
           radial-gradient(
             ellipse 90% 100% at 80% 10%,
@@ -76,19 +85,15 @@ html = f"""
   html,
   body {{
     margin: 0;
-    overflow: hidden;
-    overscroll-behavior: none;
+    min-height: 100%;
+    overflow-x: hidden;
+    background: #07051f;
   }}
 
   .page-shell {{
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100dvh;
-    overflow: hidden;
-    cursor: grab;
-    touch-action: none;
-    user-select: none;
+    width: 100%;
+    min-height: 100svh;
+    overflow-x: hidden;
     background:
       radial-gradient(
         ellipse 90% 100% at 80% 10%,
@@ -106,29 +111,26 @@ html = f"""
       );
   }}
 
-  .page-shell.is-dragging {{
-    cursor: grabbing;
-  }}
-
   .page-track {{
     width: 100%;
-    height: 100%;
-    transform: translate3d(0, 0, 0);
-    transition: transform 560ms cubic-bezier(.22, 1, .36, 1);
-    will-change: transform;
-  }}
-
-  .page-track.is-dragging {{
-    transition: none;
+    scroll-snap-type: y mandatory;
+    -webkit-overflow-scrolling: touch;
   }}
 
   .snap-page {{
     width: 100%;
-    height: 100dvh;
+    min-height: 100svh;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+
+    padding:
+      max(1rem, env(safe-area-inset-top))
+      1rem
+      max(1.25rem, env(safe-area-inset-bottom));
   }}
 
   .phone-width {{
@@ -318,8 +320,8 @@ html = f"""
   }}
 </style>
 
-<div class="page-shell" id="pageShell">
-  <main class="page-track" id="pageTrack">
+<div class="page-shell">
+  <main class="page-track">
     <section class="snap-page">
       <div class="phone-width">
         <div class="title">Mortgage<br>Calculator</div>
@@ -389,9 +391,6 @@ html = f"""
 
 <script>
   const rateMap = {json.dumps(rate_map)};
-  const pageShell = document.getElementById("pageShell");
-  const pageTrack = document.getElementById("pageTrack");
-  const pages = Array.from(document.querySelectorAll(".snap-page"));
 
   const loanAmountEl = document.getElementById("loanAmount");
   const creditRangeEl = document.getElementById("creditRange");
@@ -406,160 +405,6 @@ html = f"""
     currency: "USD",
     maximumFractionDigits: 0
   }});
-
-  let currentPage = 0;
-  let currentTranslateY = 0;
-  let isAnimating = false;
-  let isDragging = false;
-  let animationTimer = null;
-  let pointerId = null;
-  let dragStartY = 0;
-  let dragStartTranslateY = 0;
-  let lastPointerY = 0;
-  let lastPointerTime = 0;
-  let dragVelocityY = 0;
-
-  function getViewportHeight() {{
-    return window.innerHeight || document.documentElement.clientHeight;
-  }}
-
-  function clamp(value, min, max) {{
-    return Math.max(min, Math.min(value, max));
-  }}
-
-  function getPageTranslateY(pageIndex) {{
-    return -pageIndex * getViewportHeight();
-  }}
-
-  function getCurrentRenderedTranslateY() {{
-    const transform = window.getComputedStyle(pageTrack).transform;
-
-    if (!transform || transform === "none") {{
-      return currentTranslateY;
-    }}
-
-    return new DOMMatrixReadOnly(transform).m42;
-  }}
-
-  function setTrackTranslateY(translateY) {{
-    currentTranslateY = translateY;
-    pageTrack.style.transform = `translate3d(0, ${{translateY}}px, 0)`;
-  }}
-
-  function setDraggingState(enabled) {{
-    isDragging = enabled;
-    pageShell.classList.toggle("is-dragging", enabled);
-    pageTrack.classList.toggle("is-dragging", enabled);
-  }}
-
-  function stopAnimationAtCurrentPosition() {{
-    if (animationTimer !== null) {{
-      window.clearTimeout(animationTimer);
-      animationTimer = null;
-    }}
-
-    const renderedTranslateY = getCurrentRenderedTranslateY();
-
-    isAnimating = false;
-    setDraggingState(true);
-    setTrackTranslateY(renderedTranslateY);
-
-    pageTrack.getBoundingClientRect();
-  }}
-
-  function getNearestPageFromTranslateY(translateY) {{
-    const pageIndex = Math.round(-translateY / getViewportHeight());
-    return clamp(pageIndex, 0, pages.length - 1);
-  }}
-
-  function dampenBoundaryTranslateY(translateY) {{
-    const maxTranslateY = 0;
-    const minTranslateY = getPageTranslateY(pages.length - 1);
-
-    if (translateY > maxTranslateY) {{
-      return maxTranslateY + (translateY - maxTranslateY) * 0.28;
-    }}
-
-    if (translateY < minTranslateY) {{
-      return minTranslateY + (translateY - minTranslateY) * 0.28;
-    }}
-
-    return translateY;
-  }}
-
-  function goToPage(nextPage) {{
-    const clampedPage = clamp(nextPage, 0, pages.length - 1);
-    const targetTranslateY = getPageTranslateY(clampedPage);
-
-    if (!isDragging && Math.abs(currentTranslateY - targetTranslateY) < 0.5) {{
-      currentPage = clampedPage;
-      return;
-    }}
-
-    if (animationTimer !== null) {{
-      window.clearTimeout(animationTimer);
-      animationTimer = null;
-    }}
-
-    currentPage = clampedPage;
-    isAnimating = true;
-    setDraggingState(false);
-    setTrackTranslateY(targetTranslateY);
-
-    animationTimer = window.setTimeout(() => {{
-      isAnimating = false;
-      animationTimer = null;
-      currentTranslateY = targetTranslateY;
-    }}, 620);
-  }}
-
-  function isTextInputElement(element) {{
-    return element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement;
-  }}
-
-  function isInteractiveElement(target) {{
-    return Boolean(target.closest("input, select, textarea, button, label"));
-  }}
-
-  function hasSelectedInputText() {{
-    const activeElement = document.activeElement;
-
-    if (!isTextInputElement(activeElement)) {{
-      return false;
-    }}
-
-    return activeElement.selectionStart !== activeElement.selectionEnd;
-  }}
-
-  function hasDocumentSelection() {{
-    const selection = window.getSelection();
-
-    return Boolean(selection && !selection.isCollapsed && selection.toString().length > 0);
-  }}
-
-  function hasActiveTextSelection() {{
-    return hasSelectedInputText() || hasDocumentSelection();
-  }}
-
-  function clearTextSelection() {{
-    const activeElement = document.activeElement;
-
-    if (isTextInputElement(activeElement)) {{
-      const caretPosition = activeElement.selectionEnd || activeElement.value.length;
-      activeElement.setSelectionRange(caretPosition, caretPosition);
-      activeElement.blur();
-    }}
-
-    const selection = window.getSelection();
-
-    if (selection) {{
-      selection.removeAllRanges();
-    }}
-  }}
-
-  function shouldClearSelectionBeforeDrag(target) {{
-    return hasActiveTextSelection() && !isInteractiveElement(target);
-  }}
 
   function monthlyPayment(principal, annualRate, years) {{
     const monthlyRate = annualRate / 100 / 12;
@@ -592,121 +437,6 @@ html = f"""
     monthlyPaymentEl.textContent = currency.format(payment);
   }}
 
-  function handleWheel(event) {{
-    if (isInteractiveElement(event.target) || hasActiveTextSelection()) {{
-      return;
-    }}
-
-    event.preventDefault();
-
-    if (isDragging || Math.abs(event.deltaY) < 8) {{
-      return;
-    }}
-
-    if (isAnimating) {{
-      stopAnimationAtCurrentPosition();
-      setDraggingState(false);
-    }}
-
-    currentPage = getNearestPageFromTranslateY(currentTranslateY);
-    goToPage(currentPage + Math.sign(event.deltaY));
-  }}
-
-  function handlePointerDown(event) {{
-    if (pointerId !== null) {{
-      return;
-    }}
-
-    if (shouldClearSelectionBeforeDrag(event.target)) {{
-      event.preventDefault();
-      clearTextSelection();
-      return;
-    }}
-
-    if (isInteractiveElement(event.target) || hasActiveTextSelection()) {{
-      return;
-    }}
-
-    event.preventDefault();
-
-    if (isAnimating) {{
-      stopAnimationAtCurrentPosition();
-    }} else {{
-      setDraggingState(true);
-      setTrackTranslateY(getCurrentRenderedTranslateY());
-    }}
-
-    pointerId = event.pointerId;
-    dragStartY = event.clientY;
-    dragStartTranslateY = currentTranslateY;
-    lastPointerY = event.clientY;
-    lastPointerTime = performance.now();
-    dragVelocityY = 0;
-
-    pageShell.setPointerCapture(pointerId);
-  }}
-
-  function handlePointerMove(event) {{
-    if (!isDragging || event.pointerId !== pointerId) {{
-      return;
-    }}
-
-    event.preventDefault();
-
-    const now = performance.now();
-    const elapsed = Math.max(1, now - lastPointerTime);
-    const pointerDeltaY = event.clientY - lastPointerY;
-
-    dragVelocityY = pointerDeltaY / elapsed;
-    lastPointerY = event.clientY;
-    lastPointerTime = now;
-
-    const rawTranslateY = dragStartTranslateY + event.clientY - dragStartY;
-    setTrackTranslateY(dampenBoundaryTranslateY(rawTranslateY));
-  }}
-
-  function handlePointerUp(event) {{
-    if (!isDragging || event.pointerId !== pointerId) {{
-      return;
-    }}
-
-    const viewportHeight = getViewportHeight();
-    const distanceThreshold = Math.min(140, viewportHeight * 0.18);
-    const velocityThreshold = 0.55;
-    const dragDistance = currentTranslateY - dragStartTranslateY;
-    const startPage = getNearestPageFromTranslateY(dragStartTranslateY);
-
-    let targetPage = getNearestPageFromTranslateY(currentTranslateY);
-
-    if (Math.abs(dragVelocityY) > velocityThreshold) {{
-      targetPage = startPage + (dragVelocityY < 0 ? 1 : -1);
-    }} else if (Math.abs(dragDistance) > distanceThreshold) {{
-      targetPage = startPage + (dragDistance < 0 ? 1 : -1);
-    }} else {{
-      targetPage = startPage;
-    }}
-
-    if (pageShell.hasPointerCapture(pointerId)) {{
-      pageShell.releasePointerCapture(pointerId);
-    }}
-
-    pointerId = null;
-    goToPage(targetPage);
-  }}
-
-  function handlePointerCancel(event) {{
-    if (!isDragging || event.pointerId !== pointerId) {{
-      return;
-    }}
-
-    if (pageShell.hasPointerCapture(pointerId)) {{
-      pageShell.releasePointerCapture(pointerId);
-    }}
-
-    pointerId = null;
-    goToPage(getNearestPageFromTranslateY(currentTranslateY));
-  }}
-
   [
     loanAmountEl,
     creditRangeEl,
@@ -717,22 +447,8 @@ html = f"""
     element.addEventListener("change", updateCalculator);
   }});
 
-  window.addEventListener("wheel", handleWheel, {{ passive: false }});
-  pageShell.addEventListener("pointerdown", handlePointerDown);
-  pageShell.addEventListener("pointermove", handlePointerMove);
-  pageShell.addEventListener("pointerup", handlePointerUp);
-  pageShell.addEventListener("pointercancel", handlePointerCancel);
-  window.addEventListener("resize", () => goToPage(getNearestPageFromTranslateY(currentTranslateY)));
-
   updateCalculator();
-  setTrackTranslateY(getPageTranslateY(currentPage));
 </script>
 """
 
 st.html(html, unsafe_allow_javascript=True)
-
-
-
-# TODO:
-#     bug where we can accidentally highlight text while dragging the page.
-#     drag / release cursor bugged on firefox (in iphone emulation mode)
