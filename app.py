@@ -160,7 +160,7 @@ st.markdown(
         font-family: Arial, Helvetica, sans-serif;
         letter-spacing: 1px;
         font-weight: 600;
-        font-size: 44px;
+        font-size: 42px;
         line-height: 1.1;
       }
 
@@ -236,6 +236,7 @@ st.markdown(
         font-size: 0.95rem;
         font-weight: 750;
         line-height: 1;
+        margin-bottom: 0.4rem;
       }
 
       .blue-pill,
@@ -296,7 +297,7 @@ st.markdown(
       .snap-hint {
         text-align: center;
         color: rgba(255,255,255,.82);
-        font-size: 0.82rem;
+        font-size: 0.75rem;
         margin-top: 1rem;
       }
 
@@ -354,7 +355,7 @@ html = f"""
     <div class="phone-width dummy-page">
       <h2>Landing Page</h2>
       <p>Dummy page.</p>
-      <div class="snap-hint">Swipe up for more info↑</div>
+      <div class="snap-hint">Swipe up for more info</div>
     </div>
   </section>
 
@@ -432,7 +433,7 @@ html = f"""
     <div class="phone-width dummy-page">
       <h2>Contact Form</h2>
       <p>Dummy page.</p>
-      <div class="snap-hint">Swipe down to go back ↓</div>
+      <div class="snap-hint">Swipe down to go back</div>
     </div>
   </section>
 
@@ -653,3 +654,4 @@ st.html(html, unsafe_allow_javascript=True)
 #   tap the down payment dollar & percent labels to manually enter a value
 #   dollar & percent labels are not the same height
 #   dollar label title needs bottom margin
+#   <div class="snap-hint">  not the same font size across pages ??
