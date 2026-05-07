@@ -6,155 +6,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-import streamlit.components.v1 as components
-
-components.html(
-    """
-    <script>
-    (function () {
-        const parentWindow = window.parent;
-        const parentDoc = parentWindow.document;
-
-        let lastVisualHeight = null;
-        let lastInnerHeight = null;
-        let logCount = 0;
-
-        function getViewportSnapshot() {
-            const vv = parentWindow.visualViewport;
-
-            return {
-                visualHeight: vv ? Math.round(vv.height) : Math.round(parentWindow.innerHeight),
-                visualWidth: vv ? Math.round(vv.width) : Math.round(parentWindow.innerWidth),
-                innerHeight: Math.round(parentWindow.innerHeight),
-                innerWidth: Math.round(parentWindow.innerWidth),
-                offsetTop: vv ? Math.round(vv.offsetTop) : 0,
-                offsetLeft: vv ? Math.round(vv.offsetLeft) : 0,
-                scale: vv ? vv.scale : 1,
-                screenHeight: parentWindow.screen ? parentWindow.screen.height : null,
-            };
-        }
-
-        function writeToViewportConsole(payload) {
-            const output = parentDoc.getElementById("viewport-console-output");
-
-            if (!output) {
-                return;
-            }
-
-            output.textContent =
-                JSON.stringify(payload, null, 2) +
-                "\\n\\n" +
-                output.textContent;
-        }
-
-        function pushViewportLog(message, snapshot) {
-            logCount += 1;
-
-            const payload = {
-                count: logCount,
-                time: new Date().toLocaleTimeString(),
-                message,
-                ...snapshot,
-            };
-
-            console.log("[viewport]", payload);
-            writeToViewportConsole(payload);
-        }
-
-        function checkViewport(reason) {
-            const snapshot = getViewportSnapshot();
-
-            if (lastVisualHeight === null) {
-                lastVisualHeight = snapshot.visualHeight;
-                lastInnerHeight = snapshot.innerHeight;
-
-                pushViewportLog("Initial viewport measurement", {
-                    reason,
-                    ...snapshot,
-                    visualHeightDelta: 0,
-                    innerHeightDelta: 0,
-                });
-
-                return;
-            }
-
-            const visualHeightDelta = snapshot.visualHeight - lastVisualHeight;
-            const innerHeightDelta = snapshot.innerHeight - lastInnerHeight;
-
-            const changed = visualHeightDelta !== 0 || innerHeightDelta !== 0;
-
-            if (changed) {
-                pushViewportLog(
-                    visualHeightDelta > 0 || innerHeightDelta > 0
-                        ? "More screen space available"
-                        : "Less screen space available",
-                    {
-                        reason,
-                        ...snapshot,
-                        previousVisualHeight: lastVisualHeight,
-                        previousInnerHeight: lastInnerHeight,
-                        visualHeightDelta,
-                        innerHeightDelta,
-                    }
-                );
-
-                lastVisualHeight = snapshot.visualHeight;
-                lastInnerHeight = snapshot.innerHeight;
-            }
-        }
-
-        checkViewport("script loaded");
-
-        if (parentWindow.visualViewport) {
-            parentWindow.visualViewport.addEventListener("resize", function () {
-                checkViewport("parent visualViewport resize");
-            });
-
-            parentWindow.visualViewport.addEventListener("scroll", function () {
-                checkViewport("parent visualViewport scroll");
-            });
-        }
-
-        parentWindow.addEventListener("resize", function () {
-            checkViewport("parent window resize");
-        });
-
-        parentWindow.addEventListener("orientationchange", function () {
-            setTimeout(function () {
-                checkViewport("orientationchange");
-            }, 300);
-        });
-
-        // Fallback for mobile browsers that do not reliably fire visualViewport events
-        setInterval(function () {
-            checkViewport("poll");
-        }, 250);
-
-        // When the last-page debug element appears later, write the latest state into it
-        const observer = new MutationObserver(function () {
-            const output = parentDoc.getElementById("viewport-console-output");
-
-            if (output && output.textContent.includes("Waiting for viewport changes")) {
-                const snapshot = getViewportSnapshot();
-                pushViewportLog("Debug console connected", {
-                    reason: "mutation observer",
-                    ...snapshot,
-                    visualHeightDelta: 0,
-                    innerHeightDelta: 0,
-                });
-            }
-        });
-
-        observer.observe(parentDoc.body, {
-            childList: true,
-            subtree: true,
-        });
-    })();
-    </script>
-    """,
-    height=0,
-)
-
 st.markdown(
     """
     <style>
@@ -232,31 +83,6 @@ st.markdown(
 
         padding: 1.25rem 0;
         box-sizing: border-box;
-    }
-
-    .viewport-debug-card {
-        background: rgba(0, 0, 0, 0.72);
-        color: #d8ffdf;
-        border-radius: 18px;
-        padding: 1rem;
-        margin-top: 0.85rem;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-        box-shadow: 0 14px 34px rgba(0,0,0,0.18);
-    }
-
-    .viewport-debug-title {
-        color: white;
-        font-size: 0.9rem;
-        font-weight: 850;
-        margin-bottom: 0.6rem;
-    }
-
-    #viewport-console-output {
-        white-space: pre-wrap;
-        font-size: 0.72rem;
-        line-height: 1.35;
-        max-height: 160px;
-        overflow-y: auto;
     }
 
     header, footer {
@@ -602,16 +428,6 @@ with st.container(key="breakdown_section"):
                 <div class="metric-label">Total Principal + Interest</div>
                 <div class="metric-value">${total_paid:,.0f}</div>
             </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        """
-        <div class="viewport-debug-card">
-            <div class="viewport-debug-title">Viewport console</div>
-            <pre id="viewport-console-output">Waiting for viewport changes...</pre>
         </div>
         """,
         unsafe_allow_html=True,
