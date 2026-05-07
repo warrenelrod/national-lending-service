@@ -1,3 +1,4 @@
+# app.py
 import streamlit as st
 
 st.set_page_config(
@@ -9,31 +10,16 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    html {
-        width: 100%;
-        min-height: 100%;
-        margin: 0;
-        padding: 0;
-
-        overflow-y: scroll;
-        overflow-x: hidden;
-
-        scroll-snap-type: y mandatory;
-        scroll-snap-stop: always;
-        scroll-behavior: smooth;
-
-        background: #07051f !important;
-        overscroll-behavior-y: none;
+    html,
+    body {
+        height: 100%;
+        overflow: hidden;
+        overscroll-behavior: none;
     }
 
-    body {
-        width: 100%;
-        min-height: 300dvh;
-        margin: 0;
-        padding: 0;
-
-        overflow-x: hidden;
-
+    .stApp {
+        height: 100dvh;
+        overflow: hidden;
         background:
             radial-gradient(
                 circle at 95% 6%,
@@ -48,52 +34,46 @@ st.markdown(
                 #24147f 34%,
                 #171052 58%,
                 #07051f 100%
-            ) !important;
-
-        background-attachment: fixed;
-    }
-
-    #root,
-    .stApp,
-    [data-testid="stAppViewContainer"],
-    [data-testid="stMain"],
-    [data-testid="stMainBlockContainer"] {
-        width: 100%;
-        min-height: 300dvh !important;
-        height: auto !important;
-        max-height: none !important;
-
-        overflow: visible !important;
-        background: transparent !important;
-    }
-
-    .stApp {
+            );
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+    }
+
+    section.main,
+    div[data-testid="stAppViewContainer"],
+    div[data-testid="stMain"],
+    div[data-testid="stMainBlockContainer"] {
+        height: 100dvh;
     }
 
     .block-container {
         max-width: 430px;
+        height: 100dvh;
+        overflow-y: scroll;
+        overflow-x: hidden;
 
-        height: auto !important;
-        min-height: 300dvh !important;
-        max-height: none !important;
+        scroll-snap-type: y mandatory;
+        scroll-padding: 0;
+        scroll-behavior: auto;
 
-        overflow: visible !important;
+        padding-top: 0rem;
+        padding-bottom: 0rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
 
-        padding-top: 0rem !important;
-        padding-bottom: 0rem !important;
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
+        -webkit-overflow-scrolling: auto;
+        overscroll-behavior-y: contain;
+    }
 
-        background: transparent !important;
+    .block-container::-webkit-scrollbar {
+        display: none;
     }
 
     .st-key-input_section,
     .st-key-result_section,
     .st-key-breakdown_section {
-        height: 100dvh !important;
-        min-height: 100dvh !important;
-        max-height: 100dvh !important;
+        height: 100dvh;
+        min-height: 100dvh;
+        max-height: 100dvh;
 
         scroll-snap-align: start;
         scroll-snap-stop: always;
@@ -104,12 +84,6 @@ st.markdown(
 
         padding: 1.25rem 0;
         box-sizing: border-box;
-    }
-
-    .st-key-input_section > div,
-    .st-key-result_section > div,
-    .st-key-breakdown_section > div {
-        width: 100%;
     }
 
     header, footer {
