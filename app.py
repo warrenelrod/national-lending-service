@@ -10,26 +10,15 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    html {
-        min-height: 100%;
-        overflow-y: auto;
-        overflow-x: hidden;
-        overscroll-behavior-y: none;
-        background: #07051f;
-    }
-
-    body {
-        min-height: 100%;
-        overflow-y: auto;
-        overflow-x: hidden;
-        overscroll-behavior-y: none;
-        background: #07051f;
-    }
-
+    html,
+    body,
+    #root,
+    [data-testid="stAppViewContainer"],
+    [data-testid="stMain"],
+    [data-testid="stMainBlockContainer"],
     .stApp {
         min-height: 100svh;
-        height: auto;
-        overflow: visible;
+        min-height: 100dvh;
         background:
             radial-gradient(
                 circle at 95% 6%,
@@ -44,37 +33,46 @@ st.markdown(
                 #24147f 34%,
                 #171052 58%,
                 #07051f 100%
-            );
-        background-attachment: fixed;
-        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+            ) !important;
     }
 
-    section.main,
-    div[data-testid="stAppViewContainer"],
-    div[data-testid="stMain"],
-    div[data-testid="stMainBlockContainer"] {
-        min-height: 100svh;
-        height: auto;
-        overflow: visible;
-        background: transparent;
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        overscroll-behavior: none;
+    }
+
+    .stApp {
+        min-height: 100dvh;
+        overflow: hidden;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
     }
 
     .block-container {
         max-width: 430px;
-        min-height: 100svh;
-        height: auto;
-        overflow: visible;
+
+        height: 100svh;
+        height: 100dvh;
+
+        overflow-y: scroll;
+        overflow-x: hidden;
 
         scroll-snap-type: y mandatory;
         scroll-padding: 0;
-        scroll-behavior: smooth;
+        scroll-behavior: auto;
 
         padding-top: 0rem;
         padding-bottom: 0rem;
         padding-left: 1rem;
         padding-right: 1rem;
 
-        overscroll-behavior-y: none;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+
+        background: transparent !important;
     }
 
     .block-container::-webkit-scrollbar {
@@ -85,7 +83,13 @@ st.markdown(
     .st-key-result_section,
     .st-key-breakdown_section {
         height: 100svh;
+        height: 100dvh;
+
         min-height: 100svh;
+        min-height: 100dvh;
+
+        max-height: 100svh;
+        max-height: 100dvh;
 
         scroll-snap-align: start;
         scroll-snap-stop: always;
