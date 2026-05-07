@@ -22,20 +22,20 @@ st.markdown(
     .stApp {
         height: 100dvh;
         overflow: hidden;
-        /* Updated Deep Sea Background - Brighter version */
+        /* Updated Background with base color #25257B */
         background: radial-gradient(
-            circle at 95% 6%,
+            circle at 85% 5%,
             rgba(0, 150, 220, 0.5) 0%,
             rgba(0, 80, 160, 0.35) 35%,
-            rgba(10, 30, 60, 0.2) 70%,
-            rgba(0, 10, 30, 0.6) 100%
+            rgba(37, 37, 123, 0.2) 70%,
+            rgba(20, 20, 60, 0.6) 100%
         ),
         linear-gradient(
             180deg,
-            #003366 0%,
-            #004c99 34%,
-            #00264d 58%,
-            #001122 100%
+            #25257B 0%,
+            #3b3ba0 34%,
+            #1b1b5e 58%,
+            #0e0e3c 100%
         );
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
     }
@@ -153,7 +153,7 @@ st.markdown(
     .stSlider div[data-baseweb="slider"] div[role="slider"] {
         width: 26px !important;
         height: 26px !important;
-        background: #4156f4 !important;
+        background: #4C58F1 !important;
         border: 3px solid white !important;
         box-shadow: none !important;
     }
@@ -170,7 +170,7 @@ st.markdown(
 
     /* Filled track */
     .stSlider div[data-baseweb="slider"] > div > div > div {
-        background: #4156f4 !important;
+        background: #4C58F1 !important;
     }
 
     .pill-stack {
@@ -199,7 +199,7 @@ st.markdown(
     }
 
     .blue-pill {
-        background: #4156f4;
+        background: #4C58F1;
         color: white;
         font-size: 1.25rem;
         font-weight: 850;
