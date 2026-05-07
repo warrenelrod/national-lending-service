@@ -284,6 +284,43 @@ st.markdown(
         font-weight: 850;
         letter-spacing: -0.04em;
     }
+
+    @media (max-width: 590px) {
+        .st-key-glass_card {
+            padding-left: 0.8rem;
+            padding-right: 0.8rem;
+        }
+
+        /* Keep the two top input columns side by side on mobile */
+        .st-key-glass_card div[data-testid="stHorizontalBlock"] {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+            gap: 0.6rem !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            overflow: hidden !important;
+        }
+
+        .st-key-glass_card div[data-testid="column"] {
+            width: 100% !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
+        }
+
+        /* Prevent Streamlit/BaseWeb internals from forcing column overflow */
+        .st-key-glass_card div[data-testid="column"] > div,
+        .st-key-glass_card .stNumberInput,
+        .st-key-glass_card .stSelectbox,
+        .st-key-glass_card div[data-baseweb="select"] {
+            width: 100% !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
+        }
+
+        label, .stSlider label, .stSelectbox label, .stNumberInput label {
+            font-size: 0.82rem !important;
+        }
+    }
     </style>
     """,
     unsafe_allow_html=True,
