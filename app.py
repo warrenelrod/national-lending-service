@@ -21,6 +21,12 @@ credit_ranges = [
 
 loan_types = ["Fixed", "FHA", "VA"]
 
+DEFAULT_LOAN_AMOUNT = 425_000
+DEFAULT_CREDIT_RANGE = "760+"
+DEFAULT_LOAN_TYPE = "Fixed"
+DEFAULT_LOAN_TERM = 30
+DEFAULT_DOWN_PAYMENT_PCT = 20
+
 rate_map = {
     str(term): {
         credit: annual_rate(term, credit)
@@ -30,11 +36,42 @@ rate_map = {
 }
 
 
+def option_tags(options, selected=None, label_fn=str):
+    return "".join(
+        f'<option value="{option}" {"selected" if option == selected else ""}>'
+        f"{label_fn(option)}"
+        "</option>"
+        for option in options
+    )
+
+
 st.markdown(
     """
     <style>
       * {
         box-sizing: border-box;
+      }
+
+      :root {
+        --app-bg:
+          radial-gradient(
+            ellipse 90% 100% at 80% 10%,
+            rgba(150, 135, 255, 0.35) 0%,
+            rgba(115, 95, 235, 0.22) 35%,
+            rgba(70, 50, 170, 0.08) 65%,
+            rgba(11, 8, 40, 0) 100%
+          ),
+          linear-gradient(
+            180deg,
+            #252377 0%,
+            #24147f 34%,
+            #171052 58%,
+            #07051f 100%
+          );
+
+        --field-bg: rgba(255,255,255,0.84);
+        --field-radius: 11px;
+        --field-height: 2.45rem;
       }
 
       html,
@@ -51,22 +88,13 @@ st.markdown(
         overscroll-behavior-y: none;
       }
 
-      .stApp {
-        background:
-          radial-gradient(
-            ellipse 90% 100% at 80% 10%,
-            rgba(150, 135, 255, 0.35) 0%,
-            rgba(115, 95, 235, 0.22) 35%,
-            rgba(70, 50, 170, 0.08) 65%,
-            rgba(11, 8, 40, 0) 100%
-          ),
-          linear-gradient(
-            180deg,
-            #252377 0%,
-            #24147f 34%,
-            #171052 58%,
-            #07051f 100%
-          ) !important;
+      .stApp,
+      .snap-app,
+      section.stAppViewMain,
+      section.main,
+      section[data-testid="stMain"],
+      div[data-testid="stAppViewContainer"] > section {
+        background: var(--app-bg) !important;
       }
 
       header,
@@ -85,10 +113,6 @@ st.markdown(
         width: 100% !important;
       }
 
-      /*
-        Streamlit has changed its main scroll container class/testid
-        across versions. We target the known variants.
-      */
       section.stAppViewMain,
       section.main,
       section[data-testid="stMain"],
@@ -101,41 +125,11 @@ st.markdown(
         scroll-padding: 0 !important;
         -webkit-overflow-scrolling: touch !important;
         overscroll-behavior-y: contain !important;
-        background:
-          radial-gradient(
-            ellipse 90% 100% at 80% 10%,
-            rgba(150, 135, 255, 0.35) 0%,
-            rgba(115, 95, 235, 0.22) 35%,
-            rgba(70, 50, 170, 0.08) 65%,
-            rgba(11, 8, 40, 0) 100%
-          ),
-          linear-gradient(
-            180deg,
-            #252377 0%,
-            #24147f 34%,
-            #171052 58%,
-            #07051f 100%
-          ) !important;
       }
 
       .snap-app {
         width: 100%;
         min-height: 200svh;
-        background:
-          radial-gradient(
-            ellipse 90% 100% at 80% 10%,
-            rgba(150, 135, 255, 0.35) 0%,
-            rgba(115, 95, 235, 0.22) 35%,
-            rgba(70, 50, 170, 0.08) 65%,
-            rgba(11, 8, 40, 0) 100%
-          ),
-          linear-gradient(
-            180deg,
-            #252377 0%,
-            #24147f 34%,
-            #171052 58%,
-            #07051f 100%
-          );
       }
 
       .snap-page {
@@ -201,19 +195,26 @@ st.markdown(
         margin-bottom: 0.35rem;
       }
 
-      input[type="number"],
+      input[type="text"],
       select {
         width: 100%;
         min-width: 0;
+        height: var(--field-height);
         border: none;
         outline: none;
-        background: rgba(255,255,255,0.84);
+        background: var(--field-bg);
         color: #111;
-        border-radius: 11px;
+        border-radius: var(--field-radius);
         padding: 0.55rem 0.6rem;
         font-size: 1rem;
+        line-height: 1.2;
         font-weight: 750;
         user-select: auto;
+      }
+
+      input[type="text"] {
+        appearance: none;
+        -webkit-appearance: none;
       }
 
       .pill-row {
@@ -237,13 +238,17 @@ st.markdown(
         line-height: 1;
       }
 
+      .blue-pill,
+      .white-pill {
+        font-weight: 850;
+        padding: 0.45rem 0.7rem;
+        border-radius: var(--field-radius);
+      }
+
       .blue-pill {
         background: #4C58F1;
         color: white;
         font-size: 1.25rem;
-        font-weight: 850;
-        padding: 0.45rem 0.7rem;
-        border-radius: 11px;
         box-shadow: 0 3px 8px rgba(65,86,244,.32);
       }
 
@@ -251,9 +256,6 @@ st.markdown(
         background: white;
         color: #111;
         font-size: 1.15rem;
-        font-weight: 850;
-        padding: 0.45rem 0.7rem;
-        border-radius: 11px;
       }
 
       input[type="range"] {
@@ -328,7 +330,7 @@ st.markdown(
           font-size: 0.8rem;
         }
 
-        input[type="number"],
+        input[type="text"],
         select {
           font-size: 0.92rem;
           padding-left: 0.45rem;
@@ -346,7 +348,7 @@ st.markdown(
 
 
 html = f"""
-<div class="snap-app" id="snapApp">
+<div class="snap-app">
   <section class="snap-page">
     <div class="phone-width">
       <div class="title">Mortgage<br>Calculator</div>
@@ -356,13 +358,18 @@ html = f"""
           <div>
             <div class="field">
               <label for="loanAmount">Loan Amount</label>
-              <input id="loanAmount" type="number" min="50000" max="3000000" step="5000" value="425000" />
+              <input
+                id="loanAmount"
+                type="text"
+                inputmode="numeric"
+                value="${DEFAULT_LOAN_AMOUNT:,}"
+              />
             </div>
 
             <div class="field">
               <label for="creditRange">Credit Score</label>
               <select id="creditRange">
-                {"".join(f'<option value="{credit}">{credit}</option>' for credit in credit_ranges)}
+                {option_tags(credit_ranges, selected=DEFAULT_CREDIT_RANGE)}
               </select>
             </div>
           </div>
@@ -371,14 +378,14 @@ html = f"""
             <div class="field">
               <label for="loanType">Loan Type</label>
               <select id="loanType">
-                {"".join(f'<option value="{loan_type}">{loan_type}</option>' for loan_type in loan_types)}
+                {option_tags(loan_types, selected=DEFAULT_LOAN_TYPE)}
               </select>
             </div>
 
             <div class="field">
               <label for="loanTerm">Loan Term</label>
               <select id="loanTerm">
-                {"".join(f'<option value="{term}" {"selected" if term == 30 else ""}>{term} years</option>' for term in term_years)}
+                {option_tags(term_years, selected=DEFAULT_LOAN_TERM, label_fn=lambda term: f"{term} years")}
               </select>
             </div>
           </div>
@@ -387,16 +394,23 @@ html = f"""
         <div class="pill-row">
           <div class="pill-stack">
             <div class="pill-label">Down Payment</div>
-            <div class="blue-pill" id="downPaymentDollars">$85,000</div>
+            <div class="blue-pill" id="downPaymentDollars"></div>
           </div>
-          <div class="white-pill" id="downPaymentPercent">20%</div>
+          <div class="white-pill" id="downPaymentPercent"></div>
         </div>
 
-        <input id="downPaymentSlider" type="range" min="0" max="50" step="1" value="20" />
+        <input
+          id="downPaymentSlider"
+          type="range"
+          min="0"
+          max="50"
+          step="1"
+          value="{DEFAULT_DOWN_PAYMENT_PCT}"
+        />
 
         <div class="payment-card">
           <div class="payment-title">Estimated Monthly Payment</div>
-          <div class="big-payment" id="monthlyPayment">$2,234</div>
+          <div class="big-payment" id="monthlyPayment"></div>
           <div class="subtle">principal + interest</div>
         </div>
       </div>
@@ -416,6 +430,13 @@ html = f"""
 <script>
   const rateMap = {json.dumps(rate_map)};
 
+  const streamlitScrollerSelectors = [
+    "section.stAppViewMain",
+    "section.main",
+    "section[data-testid='stMain']",
+    "div[data-testid='stAppViewContainer'] > section"
+  ];
+
   const loanAmountEl = document.getElementById("loanAmount");
   const creditRangeEl = document.getElementById("creditRange");
   const loanTermEl = document.getElementById("loanTerm");
@@ -430,7 +451,24 @@ html = f"""
     maximumFractionDigits: 0
   }});
 
-  function monthlyPayment(principal, annualRate, years) {{
+  function getParentDocument() {{
+    try {{
+      return window.parent.document;
+    }} catch (error) {{
+      return document;
+    }}
+  }}
+
+  function parseCurrency(value) {{
+    return Number(String(value).replace(/[^0-9]/g, "")) || 0;
+  }}
+
+  function formatCurrencyInput(value) {{
+    const numericValue = parseCurrency(value);
+    return numericValue ? currency.format(numericValue) : "";
+  }}
+
+  function calculateMonthlyPayment(principal, annualRate, years) {{
     const monthlyRate = annualRate / 100 / 12;
     const numberOfPayments = years * 12;
 
@@ -446,7 +484,7 @@ html = f"""
   }}
 
   function updateCalculator() {{
-    const loanAmount = Number(loanAmountEl.value || 0);
+    const loanAmount = parseCurrency(loanAmountEl.value);
     const creditRange = creditRangeEl.value;
     const loanTerm = Number(loanTermEl.value);
     const downPaymentPct = Number(downPaymentSliderEl.value);
@@ -454,80 +492,55 @@ html = f"""
     const downPayment = loanAmount * downPaymentPct / 100;
     const principal = loanAmount - downPayment;
     const annualRate = rateMap[String(loanTerm)][creditRange];
-    const payment = monthlyPayment(principal, annualRate, loanTerm);
+    const payment = calculateMonthlyPayment(principal, annualRate, loanTerm);
 
     downPaymentDollarsEl.textContent = currency.format(downPayment);
     downPaymentPercentEl.textContent = `${{downPaymentPct}}%`;
     monthlyPaymentEl.textContent = currency.format(payment);
   }}
 
-  [
-    loanAmountEl,
-    creditRangeEl,
-    loanTermEl,
-    downPaymentSliderEl
-  ].forEach((element) => {{
-    element.addEventListener("input", updateCalculator);
-    element.addEventListener("change", updateCalculator);
-  }});
-
   function findStreamlitScroller() {{
+    const doc = getParentDocument();
+
     return (
-      window.parent.document.querySelector("section.stAppViewMain") ||
-      window.parent.document.querySelector("section.main") ||
-      window.parent.document.querySelector("section[data-testid='stMain']") ||
-      window.parent.document.querySelector("div[data-testid='stAppViewContainer'] > section") ||
-      window.parent.document.scrollingElement
+      streamlitScrollerSelectors
+        .map((selector) => doc.querySelector(selector))
+        .find(Boolean) ||
+      doc.scrollingElement
     );
   }}
 
   function applyStreamlitSnapPatch() {{
-    let doc;
+    const doc = getParentDocument();
 
-    try {{
-      doc = window.parent.document;
-    }} catch (error) {{
-      doc = document;
-    }}
-
-    const selectors = [
-      "section.stAppViewMain",
-      "section.main",
-      "section[data-testid='stMain']",
-      "div[data-testid='stAppViewContainer'] > section"
-    ];
-
-    selectors.forEach((selector) => {{
+    streamlitScrollerSelectors.forEach((selector) => {{
       const el = doc.querySelector(selector);
 
       if (!el) {{
         return;
       }}
 
-      el.style.height = "100svh";
-      el.style.maxHeight = "100svh";
-      el.style.overflowY = "auto";
-      el.style.overflowX = "hidden";
-      el.style.scrollSnapType = "y mandatory";
-      el.style.scrollPadding = "0";
-      el.style.webkitOverflowScrolling = "touch";
-      el.style.overscrollBehaviorY = "contain";
-      el.style.background = "#07051f";
+      Object.assign(el.style, {{
+        height: "100svh",
+        maxHeight: "100svh",
+        overflowY: "auto",
+        overflowX: "hidden",
+        scrollSnapType: "y mandatory",
+        scrollPadding: "0",
+        webkitOverflowScrolling: "touch",
+        overscrollBehaviorY: "contain"
+      }});
     }});
 
     const block = doc.querySelector("[data-testid='stMainBlockContainer'], .block-container");
 
     if (block) {{
-      block.style.padding = "0";
-      block.style.margin = "0";
-      block.style.maxWidth = "none";
-      block.style.width = "100%";
-    }}
-
-    const app = doc.querySelector(".stApp");
-
-    if (app) {{
-      app.style.background = "#07051f";
+      Object.assign(block.style, {{
+        padding: "0",
+        margin: "0",
+        maxWidth: "none",
+        width: "100%"
+      }});
     }}
   }}
 
@@ -540,12 +553,11 @@ html = f"""
     }}
 
     const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-    const currentTop = scroller.scrollTop;
     const targetIndex = Math.max(
       0,
       Math.min(
         pages.length - 1,
-        Math.round(currentTop / viewportHeight)
+        Math.round(scroller.scrollTop / viewportHeight)
       )
     );
 
@@ -572,24 +584,45 @@ html = f"""
     }}, {{ passive: true }});
   }}
 
-  applyStreamlitSnapPatch();
-  installSnapFallback();
-  updateCalculator();
-
-  window.setTimeout(() => {{
+  function refreshStreamlitLayout() {{
     applyStreamlitSnapPatch();
     installSnapFallback();
-  }}, 250);
+  }}
 
-  window.setTimeout(() => {{
-    applyStreamlitSnapPatch();
-    installSnapFallback();
-  }}, 1000);
-
-  window.addEventListener("resize", () => {{
-    applyStreamlitSnapPatch();
-    installSnapFallback();
+  loanAmountEl.addEventListener("input", () => {{
+    loanAmountEl.value = loanAmountEl.value.replace(/[^0-9]/g, "");
+    updateCalculator();
   }});
+
+  loanAmountEl.addEventListener("focus", () => {{
+    const numericValue = parseCurrency(loanAmountEl.value);
+    loanAmountEl.value = numericValue ? String(numericValue) : "";
+  }});
+
+  loanAmountEl.addEventListener("blur", () => {{
+    loanAmountEl.value = formatCurrencyInput(loanAmountEl.value);
+    updateCalculator();
+  }});
+
+  loanAmountEl.addEventListener("keydown", (event) => {{
+    if (event.key === "Escape" || event.key === "Enter") {{
+      loanAmountEl.blur();
+    }}
+  }});
+
+  [creditRangeEl, loanTermEl, downPaymentSliderEl].forEach((element) => {{
+    element.addEventListener("input", updateCalculator);
+    element.addEventListener("change", updateCalculator);
+  }});
+
+  updateCalculator();
+  refreshStreamlitLayout();
+
+  [250, 1000].forEach((delay) => {{
+    window.setTimeout(refreshStreamlitLayout, delay);
+  }});
+
+  window.addEventListener("resize", refreshStreamlitLayout);
 </script>
 """
 
@@ -598,6 +631,12 @@ st.html(html, unsafe_allow_javascript=True)
 
 
 # TODO:
+#   slider:
+#     make knob larger
+#     knob style is different between desktop and ios
+#     remove slider track border
+#   background gradient should be for view size not entire length
+#   - when trying to scroll past first / last pages, two layers of gradients show with a hard edge
 #   scroll bar does not appear on desktop
 #   scrolling on ios still doesn't hide the toolbar
-#   tap the down payment dollar & percent labels to manually enter a value.
+#   tap the down payment dollar & percent labels to manually enter a value
