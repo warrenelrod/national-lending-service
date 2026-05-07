@@ -407,8 +407,8 @@ html = f"""
 
   <section class="snap-page">
     <div class="phone-width dummy-page">
-      <h2>Payment Details</h2>
-      <p>Dummy second page for snap scrolling.</p>
+      <h2>Contact Form</h2>
+      <p>Dummy page.</p>
     </div>
   </section>
 </div>
@@ -594,3 +594,10 @@ html = f"""
 """
 
 st.html(html, unsafe_allow_javascript=True)
+
+
+
+# TODO:
+#   scroll bar does not appear on desktop
+#   scrolling on ios still doesn't hide the toolbar
+#   tap the down payment dollar & percent labels to manually enter a value.
