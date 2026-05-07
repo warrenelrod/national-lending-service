@@ -46,7 +46,7 @@ st.markdown(
 
     .block-container {
         max-width: 430px;
-        height: 100dvh;
+        height: 130dvh;
         overflow-y: scroll;
         overflow-x: hidden;
 
@@ -70,9 +70,9 @@ st.markdown(
     .st-key-input_section,
     .st-key-result_section,
     .st-key-breakdown_section {
-        height: 100dvh;
-        min-height: 100dvh;
-        max-height: 100dvh;
+        height: 130dvh;
+        min-height: 130dvh;
+        max-height: 130dvh;
 
         scroll-snap-align: start;
         scroll-snap-stop: always;
