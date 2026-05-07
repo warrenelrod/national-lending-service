@@ -27,6 +27,13 @@ DEFAULT_LOAN_TYPE = "Fixed"
 DEFAULT_LOAN_TERM = 30
 DEFAULT_DOWN_PAYMENT_PCT = 20
 
+MLO_NAME = "Your MLO Name"
+COMPANY_NAME = "National Lending Service"
+COMPANY_ABBREVIATION = "NLS"
+NMLS_ID = "NMLS #XXXXXXX"
+FL_LICENSE = "Florida License #XXXXXXX"
+SERVICE_AREA = "Pinellas County and surrounding Florida communities"
+
 rate_map = {
     str(term): {
         credit: annual_rate(term, credit)
@@ -317,6 +324,144 @@ st.markdown(
         color: rgba(255,255,255,.78);
       }
 
+
+
+
+      .hero-card {
+        position: relative;
+        overflow: hidden;
+        color: white;
+        border-radius: 28px;
+        padding: 1.35rem;
+        background:
+          linear-gradient(
+            145deg,
+            rgba(255,255,255,0.18) 0%,
+            rgba(255,255,255,0.08) 44%,
+            rgba(255,255,255,0.04) 100%
+          );
+        border: 1px solid rgba(255,255,255,0.22);
+        box-shadow: 0 24px 70px rgba(0,0,0,0.22);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+      }
+
+      .hero-card::before {
+        content: "";
+        position: absolute;
+        inset: -40% -20% auto auto;
+        width: 260px;
+        height: 260px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.18);
+        filter: blur(10px);
+        pointer-events: none;
+      }
+
+      .hero-kicker {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        width: fit-content;
+        margin-bottom: 1.1rem;
+        padding: 0.45rem 0.7rem;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.14);
+        color: rgba(255,255,255,0.86);
+        font-size: 0.72rem;
+        font-weight: 850;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .hero-brand-row {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.35rem;
+      }
+
+      .hero-logo {
+        display: grid;
+        place-items: center;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 16px;
+        background: white;
+        color: #24147f;
+        font-size: 0.95rem;
+        font-weight: 950;
+        letter-spacing: 0.05em;
+        box-shadow: 0 12px 28px rgba(0,0,0,0.16);
+      }
+
+      .hero-company {
+        font-size: 1.05rem;
+        line-height: 1.1;
+        font-weight: 900;
+      }
+
+      .hero-meta {
+        margin-top: 0.15rem;
+        color: rgba(255,255,255,0.7);
+        font-size: 0.82rem;
+        font-weight: 650;
+      }
+
+      .hero-title {
+        position: relative;
+        margin: 0;
+        max-width: 12ch;
+        font-size: 3rem;
+        line-height: 0.95;
+        letter-spacing: -0.08em;
+        font-weight: 650;
+      }
+
+      .hero-subtitle {
+        position: relative;
+        margin: 1rem 0 1.1rem;
+        color: rgba(255,255,255,0.78);
+        font-size: 0.98rem;
+        line-height: 1.45;
+      }
+
+      .hero-badges {
+        position: relative;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.55rem;
+        margin-bottom: 0.85rem;
+      }
+
+      .hero-badge {
+        min-width: 0;
+        padding: 0.62rem 0.68rem;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.12);
+        color: rgba(255,255,255,0.86);
+        font-size: 0.76rem;
+        font-weight: 750;
+        line-height: 1.2;
+      }
+
+      .disclosure-card {
+        position: relative;
+        margin-top: 0.75rem;
+        padding: 0.85rem;
+        border-radius: 18px;
+        background: rgba(7, 5, 31, 0.34);
+        color: rgba(255,255,255,0.76);
+        font-size: 0.76rem;
+        line-height: 1.4;
+      }
+
+      .disclosure-card strong {
+        color: white;
+      }
+
+
       @media (max-width: 360px) {
         .glass-card {
           padding-left: 0.8rem;
@@ -341,6 +486,18 @@ st.markdown(
         .big-payment {
           font-size: 3.35rem;
         }
+
+        .hero-card {
+          padding: 1.1rem;
+        }
+
+        .hero-title {
+          font-size: 2.55rem;
+        }
+
+        .hero-badges {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
     """,
@@ -352,10 +509,40 @@ html = f"""
 <div class="snap-app">
 
   <section class="snap-page">
-    <div class="phone-width dummy-page">
-      <h2>Landing Page</h2>
-      <p>Dummy page.</p>
-      <div class="snap-hint">Swipe up for more info</div>
+    <div class="phone-width">
+      <div class="hero-card">
+        <div class="hero-kicker">Mortgage payment estimate</div>
+
+        <div class="hero-brand-row">
+          <div class="hero-logo">{COMPANY_ABBREVIATION}</div>
+          <div>
+            <div class="hero-company">{COMPANY_NAME}</div>
+            <div class="hero-meta">Florida mortgage guidance</div>
+          </div>
+        </div>
+
+        <h1 class="hero-title">Estimate your monthly mortgage payment.</h1>
+
+        <p class="hero-subtitle">
+          Explore a quick educational estimate, then request a consultation with a licensed loan originator
+          serving {SERVICE_AREA}.
+        </p>
+
+        <div class="hero-badges">
+          <div class="hero-badge">🏢 {COMPANY_NAME}</div>
+          <div class="hero-badge">👤 {MLO_NAME}</div>
+          <div class="hero-badge">📋 {NMLS_ID}</div>
+          <div class="hero-badge">📍 {FL_LICENSE}</div>
+        </div>
+
+        <div class="disclosure-card">
+          <strong>Educational estimate only.</strong>
+          This calculator is not a loan approval, loan estimate, commitment to lend, or advertisement of a locked
+          interest rate. Final terms depend on credit, income, assets, property, loan program, and underwriting.
+        </div>
+
+        <div class="snap-hint">Swipe up to use the calculator</div>
+      </div>
     </div>
   </section>
 
