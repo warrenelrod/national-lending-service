@@ -89,6 +89,7 @@ html = f"""
     cursor: grab;
     touch-action: none;
     user-select: none;
+    -webkit-user-select: none;
     background:
       radial-gradient(
         ellipse 90% 100% at 80% 10%,
@@ -134,6 +135,12 @@ html = f"""
   .phone-width {{
     width: 100%;
     max-width: 430px;
+  }}
+
+  input,
+  textarea {{
+    user-select: text;
+    -webkit-user-select: text;
   }}
 
   .title {{
@@ -513,8 +520,52 @@ html = f"""
     }}, 620);
   }}
 
+  function isTextInputElement(element) {{
+    return element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement;
+  }}
+
   function isInteractiveElement(target) {{
     return Boolean(target.closest("input, select, textarea, button, label"));
+  }}
+
+  function hasSelectedInputText() {{
+    const activeElement = document.activeElement;
+
+    if (!isTextInputElement(activeElement)) {{
+      return false;
+    }}
+
+    return activeElement.selectionStart !== activeElement.selectionEnd;
+  }}
+
+  function hasDocumentSelection() {{
+    const selection = window.getSelection();
+
+    return Boolean(selection && !selection.isCollapsed && selection.toString().length > 0);
+  }}
+
+  function hasActiveTextSelection() {{
+    return hasSelectedInputText() || hasDocumentSelection();
+  }}
+
+  function clearTextSelection() {{
+    const activeElement = document.activeElement;
+
+    if (isTextInputElement(activeElement)) {{
+      const caretPosition = activeElement.selectionEnd || activeElement.value.length;
+      activeElement.setSelectionRange(caretPosition, caretPosition);
+      activeElement.blur();
+    }}
+
+    const selection = window.getSelection();
+
+    if (selection) {{
+      selection.removeAllRanges();
+    }}
+  }}
+
+  function shouldClearSelectionBeforeDrag(target) {{
+    return hasActiveTextSelection() && !isInteractiveElement(target);
   }}
 
   function monthlyPayment(principal, annualRate, years) {{
@@ -549,7 +600,7 @@ html = f"""
   }}
 
   function handleWheel(event) {{
-    if (isInteractiveElement(event.target)) {{
+    if (isInteractiveElement(event.target) || hasActiveTextSelection()) {{
       return;
     }}
 
@@ -569,7 +620,17 @@ html = f"""
   }}
 
   function handlePointerDown(event) {{
-    if (isInteractiveElement(event.target) || pointerId !== null) {{
+    if (pointerId !== null) {{
+      return;
+    }}
+
+    if (shouldClearSelectionBeforeDrag(event.target)) {{
+      event.preventDefault();
+      clearTextSelection();
+      return;
+    }}
+
+    if (isInteractiveElement(event.target) || hasActiveTextSelection()) {{
       return;
     }}
 
@@ -676,3 +737,9 @@ html = f"""
 """
 
 st.html(html, unsafe_allow_javascript=True)
+
+
+
+# TODO:
+#     bug where we can accidentally highlight text while dragging the page.
+#     drag / release cursor bugged on firefox (in iphone emulation mode)
