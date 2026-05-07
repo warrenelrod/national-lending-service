@@ -349,10 +349,12 @@ st.markdown(
 
 html = f"""
 <div class="snap-app">
+
   <section class="snap-page">
     <div class="phone-width dummy-page">
       <h2>Landing Page</h2>
       <p>Dummy page.</p>
+      <div class="snap-hint">Swipe up for more info↑</div>
     </div>
   </section>
 
@@ -422,7 +424,7 @@ html = f"""
         </div>
       </div>
 
-      <div class="snap-hint">Swipe up for details ↑</div>
+      <div class="snap-hint">Swipe up for more info</div>
     </div>
   </section>
 
@@ -430,8 +432,10 @@ html = f"""
     <div class="phone-width dummy-page">
       <h2>Contact Form</h2>
       <p>Dummy page.</p>
+      <div class="snap-hint">Swipe down to go back ↓</div>
     </div>
   </section>
+
 </div>
 
 <script>
