@@ -85,7 +85,8 @@ h3 {
 }
 
 .section-shell {
-    padding: 1.35rem;
+    padding:1.35rem;
+    padding-top: 0rem;
     margin: 1.2rem 0;
 }
 
@@ -155,20 +156,6 @@ h3 {
     color: #5A4319;
     line-height: 1.55;
     margin-bottom: 1.25rem;
-}
-
-.section-kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    color: var(--primary);
-    background: var(--primary-soft);
-    border: 1px solid rgba(21, 58, 91, 0.1);
-    border-radius: 999px;
-    padding: 0.5rem 0.7rem;
-    font-size: 0.78rem;
-    font-weight: 780;
-    margin-bottom: 0;
 }
 
 .section-copy {
@@ -487,6 +474,7 @@ hr {
     .section-shell,
     .result-panel {
         padding: 1rem;
+        padding-top: 0rem;
         border-radius: 22px;
     }
 
