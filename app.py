@@ -1,4 +1,3 @@
-# app.py
 import streamlit as st
 
 st.set_page_config(
@@ -7,9 +6,42 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+
+st.iframe(
+    """
+    <script>
+    function setAppHeight() {
+        const viewport = window.parent.visualViewport;
+        const height = viewport ? viewport.height : window.parent.innerHeight;
+        window.parent.document.documentElement.style.setProperty(
+            "--app-height",
+            `${height}px`
+        );
+    }
+
+    setAppHeight();
+
+    window.parent.addEventListener("resize", setAppHeight);
+    window.parent.visualViewport?.addEventListener("resize", setAppHeight);
+    window.parent.visualViewport?.addEventListener("scroll", setAppHeight);
+
+    setTimeout(() => {
+        window.parent.scrollTo(0, 1);
+        setAppHeight();
+    }, 300);
+    </script>
+    """,
+    height=1,
+)
+
+
 st.markdown(
     """
     <style>
+    :root {
+        --app-height: 100dvh;
+    }
+
     html,
     body,
     #root,
@@ -17,8 +49,11 @@ st.markdown(
     [data-testid="stMain"],
     [data-testid="stMainBlockContainer"],
     .stApp {
-        min-height: 100svh;
-        min-height: 100dvh;
+        width: 100%;
+        height: var(--app-height) !important;
+        min-height: var(--app-height) !important;
+        max-height: var(--app-height) !important;
+        margin: 0;
         background:
             radial-gradient(
                 circle at 95% 6%,
@@ -38,15 +73,11 @@ st.markdown(
 
     html,
     body {
-        width: 100%;
-        height: 100%;
-        margin: 0;
         overflow: hidden;
         overscroll-behavior: none;
     }
 
     .stApp {
-        min-height: 100dvh;
         overflow: hidden;
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
     }
@@ -54,8 +85,9 @@ st.markdown(
     .block-container {
         max-width: 430px;
 
-        height: 100svh;
-        height: 100dvh;
+        height: var(--app-height) !important;
+        min-height: var(--app-height) !important;
+        max-height: var(--app-height) !important;
 
         overflow-y: scroll;
         overflow-x: hidden;
@@ -82,14 +114,9 @@ st.markdown(
     .st-key-input_section,
     .st-key-result_section,
     .st-key-breakdown_section {
-        height: 100svh;
-        height: 100dvh;
-
-        min-height: 100svh;
-        min-height: 100dvh;
-
-        max-height: 100svh;
-        max-height: 100dvh;
+        height: var(--app-height) !important;
+        min-height: var(--app-height) !important;
+        max-height: var(--app-height) !important;
 
         scroll-snap-align: start;
         scroll-snap-stop: always;
