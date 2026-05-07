@@ -27,7 +27,7 @@ DEFAULT_LOAN_TYPE = "Fixed"
 DEFAULT_LOAN_TERM = 30
 DEFAULT_DOWN_PAYMENT_PCT = 20
 
-MLO_NAME = "Your MLO Name"
+MLO_NAME = "MLO: Marc Amaral"
 COMPANY_NAME = "National Lending Service"
 COMPANY_ABBREVIATION = "NLS"
 NMLS_ID = "NMLS #XXXXXXX"
@@ -415,7 +415,7 @@ st.markdown(
         max-width: 12ch;
         font-size: 3rem;
         line-height: 0.95;
-        letter-spacing: -0.08em;
+        letter-spacing: -0.02em;
         font-weight: 650;
       }
 
@@ -462,7 +462,7 @@ st.markdown(
       }
 
 
-      @media (max-width: 360px) {
+      @media (max-width: 430px) {
         .glass-card {
           padding-left: 0.8rem;
           padding-right: 0.8rem;
@@ -495,9 +495,9 @@ st.markdown(
           font-size: 2.55rem;
         }
 
-        .hero-badges {
+        /*.hero-badges {
           grid-template-columns: 1fr;
-        }
+        }*/
       }
     </style>
     """,
