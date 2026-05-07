@@ -511,8 +511,6 @@ html = f"""
   <section class="snap-page">
     <div class="phone-width">
       <div class="hero-card">
-        <div class="hero-kicker">Mortgage payment estimate</div>
-
         <div class="hero-brand-row">
           <div class="hero-logo">{COMPANY_ABBREVIATION}</div>
           <div>
