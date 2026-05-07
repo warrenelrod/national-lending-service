@@ -1,11 +1,31 @@
 # app.py
 import streamlit as st
 
+import streamlit.components.v1 as components
+
+
 st.set_page_config(
     page_title="Mortgage Calculator",
     layout="centered",
     initial_sidebar_state="collapsed",
 )
+
+
+
+components.html(
+    """
+    <script>
+    window.addEventListener("load", function () {
+        setTimeout(function () {
+            window.scrollTo(0, 1);
+        }, 300);
+    });
+    </script>
+    """,
+    height=0,
+)
+
+
 
 st.markdown(
     """
@@ -284,7 +304,7 @@ if "taxes_insurance" not in st.session_state:
 with st.container(key="input_section"):
     st.markdown(
         """
-        <div style="padding-left: 0.6rem;">
+        <div style="padding-left: 0.6rem; padding-bottom: 0.5rem;">
             <span style="
                 font-family: Arial, Helvetica, sans-serif;
                 letter-spacing: 1px;
@@ -299,6 +319,8 @@ with st.container(key="input_section"):
         """,
             unsafe_allow_html=True
         )
+
+    # st.markdown('<div class="glass-card">', unsafe_allow_html=True)
 
     with st.container(key="glass_card"):
         col1, col2 = st.columns(2)
