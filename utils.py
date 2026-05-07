@@ -21,6 +21,24 @@ _credit_mapping = {
 term_years = [15, 30]
 
 
+def is_mobile_user() -> bool:
+    try:
+        user_agent = st.context.headers.get("user-agent", "").lower()
+    except Exception:
+        user_agent = ""
+
+    mobile_keywords = [
+        "iphone",
+        "android",
+        "ipad",
+        "mobile",
+        "blackberry",
+        "windows phone",
+    ]
+
+    return any(keyword in user_agent for keyword in mobile_keywords)
+
+
 def annual_rate(loan_term_years, credit_range):
     return _credit_mapping[loan_term_years][credit_range]
 
@@ -35,3 +53,6 @@ def monthly_payment(principal, annual_rate, years):
     return principal * (monthly_rate * (1 + monthly_rate) ** months) / (
         (1 + monthly_rate) ** months - 1
     )
+
+
+is_mobile = is_mobile_user()
