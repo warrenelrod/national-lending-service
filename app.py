@@ -495,9 +495,9 @@ st.markdown(
           font-size: 2.55rem;
         }
 
-        /*.hero-badges {
+        .hero-badges {
           grid-template-columns: 1fr;
-        }*/
+        }
       }
     </style>
     """,
