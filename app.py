@@ -11,13 +11,14 @@ st.markdown(
     <style>
     html,
     body {
-        height: 100%;
+        min-height: 100%;
+        margin: 0;
         overflow: hidden;
         overscroll-behavior: none;
     }
 
     .stApp {
-        height: 100dvh;
+        min-height: 100dvh;
         overflow: hidden;
         background:
             radial-gradient(
@@ -34,37 +35,45 @@ st.markdown(
                 #171052 58%,
                 #07051f 100%
             );
+        background-attachment: fixed;
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
     }
 
-    section.main,
-    div[data-testid="stAppViewContainer"],
-    div[data-testid="stMain"],
-    div[data-testid="stMainBlockContainer"] {
-        height: 100dvh;
-    }
-
-    .block-container {
-        max-width: 430px;
+    div[data-testid="stAppViewContainer"] {
         height: 100dvh;
         overflow-y: scroll;
         overflow-x: hidden;
 
         scroll-snap-type: y mandatory;
         scroll-padding: 0;
-        scroll-behavior: auto;
+        scroll-behavior: smooth;
+
+        overscroll-behavior-y: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    div[data-testid="stAppViewContainer"]::-webkit-scrollbar {
+        display: none;
+    }
+
+    section.main,
+    div[data-testid="stMain"],
+    div[data-testid="stMainBlockContainer"] {
+        min-height: 100dvh;
+        height: auto;
+        overflow: visible;
+    }
+
+    .block-container {
+        max-width: 430px;
+        min-height: auto;
+        height: auto;
+        overflow: visible;
 
         padding-top: 0rem;
         padding-bottom: 0rem;
         padding-left: 1rem;
         padding-right: 1rem;
-
-        -webkit-overflow-scrolling: auto;
-        overscroll-behavior-y: contain;
-    }
-
-    .block-container::-webkit-scrollbar {
-        display: none;
     }
 
     .st-key-input_section,
@@ -72,7 +81,6 @@ st.markdown(
     .st-key-breakdown_section {
         height: 100dvh;
         min-height: 100dvh;
-        max-height: 100dvh;
 
         scroll-snap-align: start;
         scroll-snap-stop: always;
@@ -296,10 +304,8 @@ with st.container(key="input_section"):
             </span>
         </div>
         """,
-            unsafe_allow_html=True
-        )
-
-    # st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        unsafe_allow_html=True,
+    )
 
     with st.container(key="glass_card"):
         col1, col2 = st.columns(2)
@@ -324,15 +330,6 @@ with st.container(key="input_section"):
                 format_func=lambda x: f"{x:.3f}%",
                 key="interest_rate_widget",
             )
-
-        # with col2:
-        #     loan_term = st.selectbox(
-        #         "Loan Term",
-        #         options=[10, 15, 20, 25, 30],
-        #         index=[10, 15, 20, 25, 30].index(st.session_state.loan_term),
-        #         format_func=lambda x: f"{x} years",
-        #         key="loan_term_widget",
-        #     )
 
         loan_term = 30
 
@@ -404,10 +401,9 @@ with st.container(key="result_section"):
 
     st.markdown(
         f"""
-            <div class="total">
-                Total monthly <strong>~${total_monthly:,.0f}</strong><br>
-                including taxes &amp; insurance
-            </div>
+        <div class="total">
+            Total monthly <strong>~${total_monthly:,.0f}</strong><br>
+            including taxes &amp; insurance
         </div>
         """,
         unsafe_allow_html=True,
