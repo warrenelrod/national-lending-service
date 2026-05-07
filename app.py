@@ -12,14 +12,19 @@ st.set_page_config(
 
 
 
+import streamlit.components.v1 as components
+
 components.html(
     """
     <script>
-    window.addEventListener("load", function () {
+    function hideToolbar() {
         setTimeout(function () {
             window.scrollTo(0, 1);
         }, 300);
-    });
+    }
+
+    window.addEventListener("load", hideToolbar);
+    window.addEventListener("orientationchange", hideToolbar);
     </script>
     """,
     height=0,
