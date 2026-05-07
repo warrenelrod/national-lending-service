@@ -23,9 +23,9 @@ st.markdown(
         background:
             radial-gradient(
                 circle at 95% 6%,
-                rgba(125, 108, 255, 0.38) 0%,
-                rgba(91, 72, 220, 0.24) 28%,
-                rgba(50, 35, 140, 0.12) 52%,
+                rgba(150, 135, 255, 0.55) 0%,
+                rgba(115, 95, 235, 0.38) 28%,
+                rgba(70, 50, 170, 0.18) 52%,
                 rgba(11, 8, 40, 0) 78%
             ),
             linear-gradient(
@@ -358,7 +358,7 @@ with st.container(key="input_section"):
             unsafe_allow_html=True,
         )
 
-    st.markdown('<div class="snap-hint">Swipe up for payment ↓</div>', unsafe_allow_html=True)
+    st.markdown('<div class="snap-hint">Swipe up for payment ↑</div>', unsafe_allow_html=True)
 
 
 principal_interest = monthly_payment(principal, interest_rate, loan_term)
@@ -398,7 +398,7 @@ with st.container(key="result_section"):
         unsafe_allow_html=True,
     )
 
-    st.markdown('<div class="dark-hint">Swipe up for breakdown ↓</div>', unsafe_allow_html=True)
+    st.markdown('<div class="dark-hint">Swipe up for breakdown ↑</div>', unsafe_allow_html=True)
 
 
 with st.container(key="breakdown_section"):
@@ -434,4 +434,4 @@ with st.container(key="breakdown_section"):
         unsafe_allow_html=True,
     )
 
-    st.markdown('<div class="dark-hint">Swipe down to go back ↑</div>', unsafe_allow_html=True)
+    st.markdown('<div class="dark-hint">Swipe down to go back ↓</div>', unsafe_allow_html=True)
