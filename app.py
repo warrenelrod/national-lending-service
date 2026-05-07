@@ -9,17 +9,34 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    html,
+    html {
+        min-height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+
+        scroll-snap-type: y mandatory;
+        scroll-padding-top: 0;
+        scroll-behavior: auto;
+
+        overscroll-behavior-y: none;
+    }
+
     body {
         min-height: 100%;
         margin: 0;
-        overflow: hidden;
-        overscroll-behavior: none;
+        overflow-y: auto;
+        overflow-x: hidden;
+
+        scroll-snap-type: y mandatory;
+        scroll-padding-top: 0;
+        scroll-behavior: auto;
+
+        overscroll-behavior-y: none;
     }
 
     .stApp {
-        min-height: 100dvh;
-        overflow: hidden;
+        min-height: 300dvh;
+        overflow: visible;
         background:
             radial-gradient(
                 circle at 95% 6%,
@@ -39,36 +56,20 @@ st.markdown(
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
     }
 
-    div[data-testid="stAppViewContainer"] {
-        height: 100dvh;
-        overflow-y: scroll;
-        overflow-x: hidden;
-
-        scroll-snap-type: y mandatory;
-        scroll-padding: 0;
-        scroll-behavior: smooth;
-
-        overscroll-behavior-y: contain;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    div[data-testid="stAppViewContainer"]::-webkit-scrollbar {
-        display: none;
-    }
-
+    div[data-testid="stAppViewContainer"],
     section.main,
     div[data-testid="stMain"],
     div[data-testid="stMainBlockContainer"] {
-        min-height: 100dvh;
+        min-height: 300dvh;
         height: auto;
-        overflow: visible;
+        overflow: visible !important;
     }
 
     .block-container {
         max-width: 430px;
-        min-height: auto;
+        min-height: 300dvh;
         height: auto;
-        overflow: visible;
+        overflow: visible !important;
 
         padding-top: 0rem;
         padding-bottom: 0rem;
@@ -81,6 +82,7 @@ st.markdown(
     .st-key-breakdown_section {
         height: 100dvh;
         min-height: 100dvh;
+        max-height: 100dvh;
 
         scroll-snap-align: start;
         scroll-snap-stop: always;
@@ -91,6 +93,18 @@ st.markdown(
 
         padding: 1.25rem 0;
         box-sizing: border-box;
+    }
+
+    .st-key-input_section {
+        scroll-snap-align: start;
+    }
+
+    .st-key-result_section {
+        scroll-snap-align: start;
+    }
+
+    .st-key-breakdown_section {
+        scroll-snap-align: start;
     }
 
     header, footer {
