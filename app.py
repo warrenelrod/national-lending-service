@@ -12,7 +12,7 @@ st.markdown(
     <style>
     html,
     body {
-        height: 100%;
+        height: 100vh;
         overflow: hidden;
         overscroll-behavior: none;
     }
