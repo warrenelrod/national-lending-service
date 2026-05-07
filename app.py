@@ -12,27 +12,12 @@ st.markdown(
     html,
     body {
         height: 100%;
-        margin: 0;
         overflow: hidden;
         overscroll-behavior: none;
-        background: #07051f;
-    }
-
-    /* Prefer stable viewport on mobile; avoid toolbar-driven white gaps */
-    :root {
-        --app-height: 100svh;
-    }
-
-    /* Fallback for browsers that do not support svh */
-    @supports not (height: 100svh) {
-        :root {
-            --app-height: 100vh;
-        }
     }
 
     .stApp {
-        height: var(--app-height);
-        min-height: var(--app-height);
+        height: 100dvh;
         overflow: hidden;
         background:
             radial-gradient(
@@ -56,27 +41,25 @@ st.markdown(
     div[data-testid="stAppViewContainer"],
     div[data-testid="stMain"],
     div[data-testid="stMainBlockContainer"] {
-        height: var(--app-height);
-        min-height: var(--app-height);
-        overflow: hidden;
+        height: 100dvh;
     }
 
     .block-container {
         max-width: 430px;
-        height: var(--app-height);
-        min-height: var(--app-height);
-
-        overflow-y: auto;
+        height: 100dvh;
+        overflow-y: scroll;
         overflow-x: hidden;
 
         scroll-snap-type: y mandatory;
         scroll-padding: 0;
-        scroll-behavior: smooth;
+        scroll-behavior: auto;
 
-        padding: 0 1rem !important;
-        box-sizing: border-box;
+        padding-top: 0rem;
+        padding-bottom: 0rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
 
-        -webkit-overflow-scrolling: touch;
+        -webkit-overflow-scrolling: auto;
         overscroll-behavior-y: contain;
     }
 
@@ -87,8 +70,9 @@ st.markdown(
     .st-key-input_section,
     .st-key-result_section,
     .st-key-breakdown_section {
-        height: var(--app-height);
-        min-height: var(--app-height);
+        height: 100dvh;
+        min-height: 100dvh;
+        max-height: 100dvh;
 
         scroll-snap-align: start;
         scroll-snap-stop: always;
@@ -97,14 +81,12 @@ st.markdown(
         flex-direction: column;
         justify-content: center;
 
-        padding-top: max(1.25rem, env(safe-area-inset-top));
-        padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+        padding: 1.25rem 0;
         box-sizing: border-box;
     }
 
-    header,
-    footer {
-        display: none !important;
+    header, footer {
+        visibility: hidden;
     }
 
     h1 {
