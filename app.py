@@ -1,8 +1,5 @@
-# app.py
 import streamlit as st
-
 import streamlit.components.v1 as components
-
 
 st.set_page_config(
     page_title="Mortgage Calculator",
@@ -10,42 +7,222 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-
-
-import streamlit.components.v1 as components
-
 components.html(
     """
     <script>
-    function hideToolbar() {
-        setTimeout(function () {
-            window.scrollTo(0, 1);
-        }, 300);
-    }
+    (function () {
+        const parentWindow = window.parent;
+        const parentDocument = parentWindow.document;
 
-    window.addEventListener("load", hideToolbar);
-    window.addEventListener("orientationchange", hideToolbar);
+        let currentPage = 0;
+        let isAnimating = false;
+        let touchStartY = null;
+        let touchStartX = null;
+        let accumulatedWheel = 0;
+
+        function pageHeight() {
+            return parentWindow.innerHeight;
+        }
+
+        function maxPage() {
+            return 2;
+        }
+
+        function isInteractiveElement(target) {
+            if (!target) return false;
+
+            return Boolean(
+                target.closest("input") ||
+                target.closest("textarea") ||
+                target.closest("select") ||
+                target.closest("button") ||
+                target.closest("[role='slider']") ||
+                target.closest("[data-baseweb]") ||
+                target.closest(".stSlider") ||
+                target.closest(".stNumberInput") ||
+                target.closest(".stSelectbox")
+            );
+        }
+
+        function syncCurrentPage() {
+            currentPage = Math.round(parentWindow.scrollY / pageHeight());
+            currentPage = Math.max(0, Math.min(maxPage(), currentPage));
+        }
+
+        function goToPage(nextPage) {
+            nextPage = Math.max(0, Math.min(maxPage(), nextPage));
+
+            if (nextPage === currentPage && parentWindow.scrollY !== 0) {
+                return;
+            }
+
+            currentPage = nextPage;
+            isAnimating = true;
+
+            parentWindow.scrollTo({
+                top: currentPage * pageHeight(),
+                behavior: "smooth"
+            });
+
+            setTimeout(function () {
+                isAnimating = false;
+                syncCurrentPage();
+            }, 650);
+        }
+
+        function goByDirection(direction) {
+            syncCurrentPage();
+
+            if (direction > 0) {
+                goToPage(currentPage + 1);
+            } else if (direction < 0) {
+                goToPage(currentPage - 1);
+            }
+        }
+
+        function onWheel(event) {
+            if (isInteractiveElement(event.target)) return;
+
+            event.preventDefault();
+
+            if (isAnimating) return;
+
+            accumulatedWheel += event.deltaY;
+
+            if (Math.abs(accumulatedWheel) > 45) {
+                goByDirection(accumulatedWheel > 0 ? 1 : -1);
+                accumulatedWheel = 0;
+            }
+
+            clearTimeout(parentWindow.__snapWheelReset);
+            parentWindow.__snapWheelReset = setTimeout(function () {
+                accumulatedWheel = 0;
+            }, 180);
+        }
+
+        function onTouchStart(event) {
+            if (isInteractiveElement(event.target)) {
+                touchStartY = null;
+                touchStartX = null;
+                return;
+            }
+
+            const touch = event.touches[0];
+            touchStartY = touch.clientY;
+            touchStartX = touch.clientX;
+        }
+
+        function onTouchMove(event) {
+            if (touchStartY === null || touchStartX === null) return;
+            if (isInteractiveElement(event.target)) return;
+
+            const touch = event.touches[0];
+            const deltaY = touchStartY - touch.clientY;
+            const deltaX = touchStartX - touch.clientX;
+
+            if (Math.abs(deltaY) > Math.abs(deltaX)) {
+                event.preventDefault();
+            }
+        }
+
+        function onTouchEnd(event) {
+            if (touchStartY === null || touchStartX === null) return;
+            if (isInteractiveElement(event.target)) return;
+            if (isAnimating) return;
+
+            const touch = event.changedTouches[0];
+            const deltaY = touchStartY - touch.clientY;
+            const deltaX = touchStartX - touch.clientX;
+
+            touchStartY = null;
+            touchStartX = null;
+
+            if (Math.abs(deltaY) < 45) return;
+            if (Math.abs(deltaY) < Math.abs(deltaX)) return;
+
+            goByDirection(deltaY > 0 ? 1 : -1);
+        }
+
+        function installSnapPaging() {
+            parentDocument.removeEventListener("wheel", onWheel);
+            parentDocument.removeEventListener("touchstart", onTouchStart);
+            parentDocument.removeEventListener("touchmove", onTouchMove);
+            parentDocument.removeEventListener("touchend", onTouchEnd);
+
+            parentDocument.addEventListener("wheel", onWheel, { passive: false });
+            parentDocument.addEventListener("touchstart", onTouchStart, { passive: true });
+            parentDocument.addEventListener("touchmove", onTouchMove, { passive: false });
+            parentDocument.addEventListener("touchend", onTouchEnd, { passive: true });
+
+            parentWindow.addEventListener("resize", function () {
+                goToPage(currentPage);
+            });
+
+            parentWindow.addEventListener("orientationchange", function () {
+                setTimeout(function () {
+                    goToPage(currentPage);
+                }, 350);
+            });
+        }
+
+        function initialNudge() {
+            setTimeout(function () {
+                parentWindow.scrollTo(0, 1);
+
+                setTimeout(function () {
+                    parentWindow.scrollTo({
+                        top: 0,
+                        behavior: "instant"
+                    });
+                }, 120);
+            }, 500);
+        }
+
+        installSnapPaging();
+        syncCurrentPage();
+        initialNudge();
+    })();
     </script>
     """,
     height=0,
 )
 
-
-
 st.markdown(
     """
     <style>
-    html,
+    :root {
+        --app-width: 430px;
+    }
+
+    html {
+        min-height: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+        scroll-snap-type: y mandatory;
+        scroll-behavior: smooth;
+        overscroll-behavior-y: none;
+        background: #07051f;
+        scrollbar-width: none;
+    }
+
     body {
-        min-height: 101dvh;
+        min-height: 100%;
         overflow-x: hidden;
         overflow-y: auto;
         overscroll-behavior-y: none;
+        background: #07051f;
+        scrollbar-width: none;
+        touch-action: pan-y;
+    }
+
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+        display: none;
     }
 
     .stApp {
-        min-height: 101dvh;
-        overflow-x: hidden;
+        min-height: 300svh;
+        overflow: visible;
         background:
             radial-gradient(
                 circle at 95% 6%,
@@ -68,26 +245,24 @@ st.markdown(
     div[data-testid="stAppViewContainer"],
     div[data-testid="stMain"],
     div[data-testid="stMainBlockContainer"] {
-        height: 100dvh;
+        min-height: 300svh;
+        overflow: visible !important;
     }
 
     .block-container {
-        max-width: 430px;
-        height: 100dvh;
-        overflow-y: scroll;
-        overflow-x: hidden;
-
-        scroll-snap-type: y mandatory;
-        scroll-padding: 0;
-        scroll-behavior: auto;
+        max-width: var(--app-width);
+        min-height: 300svh;
+        height: auto;
+        overflow: visible !important;
 
         padding-top: 0rem;
         padding-bottom: 0rem;
         padding-left: 1rem;
         padding-right: 1rem;
 
-        -webkit-overflow-scrolling: auto;
-        overscroll-behavior-y: contain;
+        margin-left: auto;
+        margin-right: auto;
+        box-sizing: border-box;
     }
 
     .block-container::-webkit-scrollbar {
@@ -97,9 +272,9 @@ st.markdown(
     .st-key-input_section,
     .st-key-result_section,
     .st-key-breakdown_section {
-        height: 100dvh;
-        min-height: 100dvh;
-        max-height: 100dvh;
+        height: 100svh;
+        min-height: 100svh;
+        max-height: 100svh;
 
         scroll-snap-align: start;
         scroll-snap-stop: always;
@@ -112,8 +287,11 @@ st.markdown(
         box-sizing: border-box;
     }
 
-    header, footer {
+    header,
+    footer,
+    #MainMenu {
         visibility: hidden;
+        display: none;
     }
 
     h1 {
@@ -143,7 +321,10 @@ st.markdown(
         box-shadow: 0 14px 34px rgba(0,0,0,0.08);
     }
 
-    label, .stSlider label, .stSelectbox label, .stNumberInput label {
+    label,
+    .stSlider label,
+    .stSelectbox label,
+    .stNumberInput label {
         color: #151515 !important;
         font-size: 0.95rem !important;
         font-weight: 750 !important;
@@ -273,6 +454,18 @@ st.markdown(
         font-weight: 850;
         letter-spacing: -0.04em;
     }
+
+    @media screen and (max-width: 480px) {
+        .block-container {
+            max-width: 100%;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .big-payment {
+            font-size: 3.45rem;
+        }
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -323,10 +516,8 @@ with st.container(key="input_section"):
             </span>
         </div>
         """,
-            unsafe_allow_html=True
-        )
-
-    # st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        unsafe_allow_html=True,
+    )
 
     with st.container(key="glass_card"):
         col1, col2 = st.columns(2)
@@ -344,10 +535,28 @@ with st.container(key="input_section"):
 
             interest_rate = st.selectbox(
                 "Interest Rate",
-                options=[4.875, 5.125, 5.500, 5.875, 6.125, 6.500, 6.875, 7.125, 7.500],
-                index=[4.875, 5.125, 5.500, 5.875, 6.125, 6.500, 6.875, 7.125, 7.500].index(
-                    st.session_state.interest_rate
-                ),
+                options=[
+                    4.875,
+                    5.125,
+                    5.500,
+                    5.875,
+                    6.125,
+                    6.500,
+                    6.875,
+                    7.125,
+                    7.500,
+                ],
+                index=[
+                    4.875,
+                    5.125,
+                    5.500,
+                    5.875,
+                    6.125,
+                    6.500,
+                    6.875,
+                    7.125,
+                    7.500,
+                ].index(st.session_state.interest_rate),
                 format_func=lambda x: f"{x:.3f}%",
                 key="interest_rate_widget",
             )
@@ -384,7 +593,10 @@ with st.container(key="input_section"):
             unsafe_allow_html=True,
         )
 
-    st.markdown('<div class="snap-hint">Swipe up for payment ↑</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="snap-hint">Swipe up for payment ↑</div>',
+        unsafe_allow_html=True,
+    )
 
 
 principal_interest = monthly_payment(principal, interest_rate, loan_term)
@@ -424,7 +636,10 @@ with st.container(key="result_section"):
         unsafe_allow_html=True,
     )
 
-    st.markdown('<div class="dark-hint">Swipe up for breakdown ↑</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="dark-hint">Swipe up for breakdown ↑</div>',
+        unsafe_allow_html=True,
+    )
 
 
 with st.container(key="breakdown_section"):
@@ -460,4 +675,7 @@ with st.container(key="breakdown_section"):
         unsafe_allow_html=True,
     )
 
-    st.markdown('<div class="dark-hint">Swipe down to go back ↓</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="dark-hint">Swipe down to go back ↓</div>',
+        unsafe_allow_html=True,
+    )
