@@ -137,11 +137,11 @@ html = f"""
     max-width: 430px;
   }}
 
-  input,
+  /*input,
   textarea {{
     user-select: text;
     -webkit-user-select: text;
-  }}
+  }}*/
 
   .title {{
     padding-left: 0.6rem;
