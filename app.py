@@ -11,71 +11,145 @@ import streamlit.components.v1 as components
 components.html(
     """
     <script>
-    const pushViewportLog = (message, data = {}) => {
-        const timestamp = new Date().toLocaleTimeString();
+    (function () {
+        const parentWindow = window.parent;
+        const parentDoc = parentWindow.document;
 
-        const payload = {
-            time: timestamp,
-            message,
-            ...data,
-        };
+        let lastVisualHeight = null;
+        let lastInnerHeight = null;
+        let logCount = 0;
 
-        console.log(`[viewport] ${message}:`, payload);
+        function getViewportSnapshot() {
+            const vv = parentWindow.visualViewport;
 
-        const parentDoc = window.parent.document;
-        const output = parentDoc.getElementById("viewport-console-output");
+            return {
+                visualHeight: vv ? Math.round(vv.height) : Math.round(parentWindow.innerHeight),
+                visualWidth: vv ? Math.round(vv.width) : Math.round(parentWindow.innerWidth),
+                innerHeight: Math.round(parentWindow.innerHeight),
+                innerWidth: Math.round(parentWindow.innerWidth),
+                offsetTop: vv ? Math.round(vv.offsetTop) : 0,
+                offsetLeft: vv ? Math.round(vv.offsetLeft) : 0,
+                scale: vv ? vv.scale : 1,
+                screenHeight: parentWindow.screen ? parentWindow.screen.height : null,
+            };
+        }
 
-        if (output) {
+        function writeToViewportConsole(payload) {
+            const output = parentDoc.getElementById("viewport-console-output");
+
+            if (!output) {
+                return;
+            }
+
             output.textContent =
                 JSON.stringify(payload, null, 2) +
                 "\\n\\n" +
                 output.textContent;
         }
-    };
 
-    const logViewportChange = () => {
-        const vv = window.visualViewport;
+        function pushViewportLog(message, snapshot) {
+            logCount += 1;
 
-        const layoutHeight = window.innerHeight;
-        const visualHeight = vv ? vv.height : window.innerHeight;
-        const previousVisualHeight = window.__lastVisualHeight || visualHeight;
-        const availableGain = visualHeight - previousVisualHeight;
+            const payload = {
+                count: logCount,
+                time: new Date().toLocaleTimeString(),
+                message,
+                ...snapshot,
+            };
 
-        const data = {
-            previousVisualHeight,
-            currentVisualHeight: visualHeight,
-            gainedPixels: availableGain,
-            layoutHeight,
-            offsetTop: vv ? vv.offsetTop : 0,
-            scale: vv ? vv.scale : 1,
-        };
-
-        if (availableGain > 0) {
-            pushViewportLog("More screen space available", data);
-        } else if (availableGain < 0) {
-            pushViewportLog("Less screen space available", data);
-        } else {
-            pushViewportLog("Viewport event, no height change", data);
+            console.log("[viewport]", payload);
+            writeToViewportConsole(payload);
         }
 
-        window.__lastVisualHeight = visualHeight;
-    };
+        function checkViewport(reason) {
+            const snapshot = getViewportSnapshot();
 
-    window.__lastVisualHeight = window.visualViewport
-        ? window.visualViewport.height
-        : window.innerHeight;
+            if (lastVisualHeight === null) {
+                lastVisualHeight = snapshot.visualHeight;
+                lastInnerHeight = snapshot.innerHeight;
 
-    pushViewportLog("Initial", {
-        visualHeight: window.__lastVisualHeight,
-        innerHeight: window.innerHeight,
-    });
+                pushViewportLog("Initial viewport measurement", {
+                    reason,
+                    ...snapshot,
+                    visualHeightDelta: 0,
+                    innerHeightDelta: 0,
+                });
 
-    if (window.visualViewport) {
-        window.visualViewport.addEventListener("resize", logViewportChange);
-        window.visualViewport.addEventListener("scroll", logViewportChange);
-    }
+                return;
+            }
 
-    window.addEventListener("resize", logViewportChange);
+            const visualHeightDelta = snapshot.visualHeight - lastVisualHeight;
+            const innerHeightDelta = snapshot.innerHeight - lastInnerHeight;
+
+            const changed = visualHeightDelta !== 0 || innerHeightDelta !== 0;
+
+            if (changed) {
+                pushViewportLog(
+                    visualHeightDelta > 0 || innerHeightDelta > 0
+                        ? "More screen space available"
+                        : "Less screen space available",
+                    {
+                        reason,
+                        ...snapshot,
+                        previousVisualHeight: lastVisualHeight,
+                        previousInnerHeight: lastInnerHeight,
+                        visualHeightDelta,
+                        innerHeightDelta,
+                    }
+                );
+
+                lastVisualHeight = snapshot.visualHeight;
+                lastInnerHeight = snapshot.innerHeight;
+            }
+        }
+
+        checkViewport("script loaded");
+
+        if (parentWindow.visualViewport) {
+            parentWindow.visualViewport.addEventListener("resize", function () {
+                checkViewport("parent visualViewport resize");
+            });
+
+            parentWindow.visualViewport.addEventListener("scroll", function () {
+                checkViewport("parent visualViewport scroll");
+            });
+        }
+
+        parentWindow.addEventListener("resize", function () {
+            checkViewport("parent window resize");
+        });
+
+        parentWindow.addEventListener("orientationchange", function () {
+            setTimeout(function () {
+                checkViewport("orientationchange");
+            }, 300);
+        });
+
+        // Fallback for mobile browsers that do not reliably fire visualViewport events
+        setInterval(function () {
+            checkViewport("poll");
+        }, 250);
+
+        // When the last-page debug element appears later, write the latest state into it
+        const observer = new MutationObserver(function () {
+            const output = parentDoc.getElementById("viewport-console-output");
+
+            if (output && output.textContent.includes("Waiting for viewport changes")) {
+                const snapshot = getViewportSnapshot();
+                pushViewportLog("Debug console connected", {
+                    reason: "mutation observer",
+                    ...snapshot,
+                    visualHeightDelta: 0,
+                    innerHeightDelta: 0,
+                });
+            }
+        });
+
+        observer.observe(parentDoc.body, {
+            childList: true,
+            subtree: true,
+        });
+    })();
     </script>
     """,
     height=0,
