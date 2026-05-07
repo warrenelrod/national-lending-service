@@ -22,21 +22,21 @@ st.markdown(
     .stApp {
         height: 100dvh;
         overflow: hidden;
-        /* Updated Background with base color #25257B */
-        background: radial-gradient(
-            circle at 85% 5%,
-            rgba(0, 150, 220, 0.5) 0%,
-            rgba(0, 80, 160, 0.35) 35%,
-            rgba(37, 37, 123, 0.2) 70%,
-            rgba(20, 20, 60, 0.6) 100%
-        ),
-        linear-gradient(
-            180deg,
-            #25257B 0%,
-            #3b3ba0 34%,
-            #1b1b5e 58%,
-            #0e0e3c 100%
-        );
+        background:
+            radial-gradient(
+                ellipse 90% 80% at 90% 5%,
+                rgba(150, 135, 255, 0.35) 0%,
+                rgba(115, 95, 235, 0.22) 35%,
+                rgba(70, 50, 170, 0.08) 65%,
+                rgba(11, 8, 40, 0) 100%
+            ),
+            linear-gradient(
+                180deg,
+                #252377 0%,
+                #24147f 34%,
+                #171052 58%,
+                #07051f 100%
+            );
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
     }
 
