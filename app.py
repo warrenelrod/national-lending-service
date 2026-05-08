@@ -675,7 +675,8 @@ html = f"""
         <div class="input-grid">
           <div>
             <div class="field">
-              <label for="loanAmount">Loan Amount</label>
+              <!-- <label for="loanAmount">Loan Amount</label> -->
+              <label for="loanAmount">Purchase Price</label>
               <input
                 id="loanAmount"
                 type="text"
@@ -834,7 +835,7 @@ html = f"""
 
           <button class="submit-button" type="submit">Submit request</button>
 
-          <div class="form-status" id="formStatus" aria-live="polite"></div>
+          <!-- <div class="form-status" id="formStatus" aria-live="polite"></div> -->
         </form>
 
         <div class="footer-note">
@@ -844,7 +845,7 @@ html = f"""
           or program-specific mortgage insurance.
         </div>
 
-        <div class="snap-hint">Swipe down to go back</div>
+        <!-- <div class="snap-hint">Swipe down to go back</div> -->
       </div>
     </div>
   </section>
