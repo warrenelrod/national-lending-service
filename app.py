@@ -657,8 +657,8 @@ st.markdown(
         }
 
         .form-grid {
-          grid-template-columns: 1fr;
-          gap: 0.55rem;
+          # grid-template-columns: 1fr;
+          gap: 0.55rem 1.0rem;
         }
 
         .contact-card {
