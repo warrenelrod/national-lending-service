@@ -73,20 +73,20 @@ st.markdown(
         --app-bg:
           radial-gradient(
             ellipse 90% 100% at 80% 10%,
-            rgba(150, 135, 255, 0.35) 0%,
-            rgba(115, 95, 235, 0.22) 35%,
-            rgba(70, 50, 170, 0.08) 65%,
-            rgba(11, 8, 40, 0) 100%
+            rgba(65, 105, 225, 0.35) 0%,   /* Royal Blue tint */
+            rgba(41, 72, 219, 0.22) 35%,   /* Slightly deeper blue */
+            rgba(20, 40, 150, 0.08) 65%,
+            rgba(5, 5, 30, 0) 100%
           ),
           linear-gradient(
             180deg,
-            #252377 0%,
-            #24147f 34%,
-            #171052 58%,
-            #07051f 100%
+            #1e3a8a 0%,    /* Rich Royal Blue base */
+            #1a2a7c 34%,   /* Mid-tone deep blue */
+            #0f172a 58%,   /* Dark Navy */
+            #020617 100%   /* Deep midnight */
           );
 
-        --field-bg: rgba(255,255,255,0.84);
+        --field-bg: rgba(255, 255, 255, 0.84);
         --field-radius: 11px;
         --field-height: 2.45rem;
       }
@@ -1145,3 +1145,4 @@ st.html(html, unsafe_allow_javascript=True)
 #   sometimes the dollar & percent labels go blank?
 #   <div class="snap-hint">  not the same font size across pages ??
 #   detect if a github push occurs and perform a full st.rerun()?
+#   - the purchase price / down payment amount goes to zero
