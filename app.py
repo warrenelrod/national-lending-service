@@ -1,7 +1,8 @@
 import json
+
 import streamlit as st
 
-from utils import term_years, annual_rate
+from utils import annual_rate, term_years
 
 
 st.set_page_config(
@@ -9,6 +10,11 @@ st.set_page_config(
     layout="centered",
     initial_sidebar_state="collapsed",
 )
+
+
+# -----------------------------
+# Configuration
+# -----------------------------
 
 credit_ranges = [
     "760+",
@@ -51,6 +57,10 @@ def option_tags(options, selected=None, label_fn=str):
         for option in options
     )
 
+
+# -----------------------------
+# Styles
+# -----------------------------
 
 st.markdown(
     """
@@ -136,7 +146,7 @@ st.markdown(
 
       .snap-app {
         width: 100%;
-        min-height: 200svh;
+        min-height: 300svh;
       }
 
       .snap-page {
@@ -171,10 +181,17 @@ st.markdown(
         line-height: 1.1;
       }
 
-      .glass-card {
-        background: rgba(255, 255, 255, 0.74);
+      .glass-card,
+      .hero-card,
+      .contact-card {
+        border-radius: 28px;
+        box-shadow: 0 24px 70px rgba(0,0,0,0.22);
         backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
+      }
+
+      .glass-card {
+        background: rgba(255, 255, 255, 0.74);
         border-radius: 22px;
         padding: 1.25rem 1.1rem 0.85rem 1.45rem;
         box-shadow:
@@ -189,8 +206,12 @@ st.markdown(
         width: 100%;
       }
 
-      .field {
+      .field,
+      .form-field {
         min-width: 0;
+      }
+
+      .field {
         margin-bottom: 0.95rem;
       }
 
@@ -203,20 +224,27 @@ st.markdown(
       }
 
       input[type="text"],
-      select {
+      input[type="email"],
+      input[type="tel"],
+      select,
+      textarea {
         width: 100%;
         min-width: 0;
-        height: var(--field-height);
         border: none;
         outline: none;
-        background: var(--field-bg);
         color: #111;
+        user-select: auto;
+      }
+
+      input[type="text"],
+      select {
+        height: var(--field-height);
+        background: var(--field-bg);
         border-radius: var(--field-radius);
         padding: 0.55rem 0.6rem;
         font-size: 1rem;
         line-height: 1.2;
         font-weight: 750;
-        user-select: auto;
       }
 
       input[type="text"] {
@@ -224,10 +252,16 @@ st.markdown(
         -webkit-appearance: none;
       }
 
+      input[type="range"] {
+        width: 100%;
+        accent-color: #4C58F1;
+      }
+
       .pill-row {
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
+        gap: 0.75rem;
         margin-top: 0.35rem;
         margin-bottom: 1.1rem;
       }
@@ -236,6 +270,7 @@ st.markdown(
         display: flex;
         flex-direction: column;
         gap: 0.25rem;
+        min-width: 0;
       }
 
       .pill-label {
@@ -248,9 +283,14 @@ st.markdown(
 
       .blue-pill,
       .white-pill {
+        min-height: 2.15rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         font-weight: 850;
         padding: 0.45rem 0.7rem;
         border-radius: var(--field-radius);
+        white-space: nowrap;
       }
 
       .blue-pill {
@@ -264,11 +304,6 @@ st.markdown(
         background: white;
         color: #111;
         font-size: 1.15rem;
-      }
-
-      input[type="range"] {
-        width: 100%;
-        accent-color: #4C58F1;
       }
 
       .payment-card {
@@ -293,6 +328,7 @@ st.markdown(
         font-weight: 500;
         color: #050505;
         margin-bottom: 0.65rem;
+        min-height: 3.8rem;
       }
 
       .subtle {
@@ -308,35 +344,9 @@ st.markdown(
         margin-top: 1rem;
       }
 
-      .dummy-page {
+      .hero-card,
+      .contact-card {
         color: white;
-        text-align: center;
-        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, sans-serif;
-      }
-
-      .dummy-page h2 {
-        font-size: 2.25rem;
-        margin: 0 0 0.75rem;
-      }
-
-      .dummy-page p {
-        margin: 0;
-        color: rgba(255,255,255,.78);
-      }
-
-
-
-
-
-
-
-
-      .hero-card {
-        position: relative;
-        overflow: hidden;
-        color: white;
-        border-radius: 28px;
-        padding: 1.35rem;
         background:
           linear-gradient(
             145deg,
@@ -345,9 +355,12 @@ st.markdown(
             rgba(255,255,255,0.04) 100%
           );
         border: 1px solid rgba(255,255,255,0.22);
-        box-shadow: 0 24px 70px rgba(0,0,0,0.22);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
+      }
+
+      .hero-card {
+        position: relative;
+        overflow: hidden;
+        padding: 1.35rem;
       }
 
       .hero-card::before {
@@ -361,22 +374,6 @@ st.markdown(
         filter: blur(10px);
         pointer-events: none;
       }
-
-      /*.hero-kicker {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        width: fit-content;
-        margin-bottom: 1.1rem;
-        padding: 0.45rem 0.7rem;
-        border-radius: 999px;
-        background: rgba(255,255,255,0.14);
-        color: rgba(255,255,255,0.86);
-        font-size: 0.72rem;
-        font-weight: 850;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }*/
 
       .hero-brand-row {
         position: relative;
@@ -465,24 +462,8 @@ st.markdown(
         color: white;
       }
 
-
-
-
       .contact-card {
-        color: white;
-        border-radius: 28px;
         padding: 1.1rem;
-        background:
-          linear-gradient(
-            145deg,
-            rgba(255,255,255,0.18) 0%,
-            rgba(255,255,255,0.08) 44%,
-            rgba(255,255,255,0.04) 100%
-          );
-        border: 1px solid rgba(255,255,255,0.22);
-        box-shadow: 0 24px 70px rgba(0,0,0,0.22);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
       }
 
       .section-kicker {
@@ -526,10 +507,6 @@ st.markdown(
         gap: 0.65rem;
       }
 
-      .form-field {
-        min-width: 0;
-      }
-
       .form-field label {
         color: rgba(255,255,255,0.86);
         font-size: 0.76rem;
@@ -539,12 +516,7 @@ st.markdown(
       .form-field input,
       .form-field select,
       .form-field textarea {
-        width: 100%;
-        min-width: 0;
-        border: none;
-        outline: none;
         background: rgba(255,255,255,0.9);
-        color: #111;
         border-radius: 12px;
         padding: 0.56rem 0.62rem;
         font-size: 0.88rem;
@@ -607,9 +579,6 @@ st.markdown(
         line-height: 1.35;
       }
 
-
-
-
       @media (max-width: 430px) {
         .glass-card {
           padding-left: 0.8rem;
@@ -633,10 +602,8 @@ st.markdown(
 
         .big-payment {
           font-size: 3.35rem;
+          min-height: 3.35rem;
         }
-
-
-
 
         .hero-card {
           padding: 1.1rem;
@@ -650,15 +617,12 @@ st.markdown(
           grid-template-columns: 1fr;
         }
 
-
-
         .contact-title {
           font-size: 2.05rem;
         }
 
         .form-grid {
-          # grid-template-columns: 1fr;
-          gap: 0.55rem 1.0rem;
+          gap: 0.55rem 1rem;
         }
 
         .contact-card {
@@ -669,14 +633,16 @@ st.markdown(
         .form-field select {
           height: 2.2rem;
         }
-
-
       }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
+
+# -----------------------------
+# App HTML + JavaScript
+# -----------------------------
 
 html = f"""
 <div class="snap-app">
@@ -700,8 +666,6 @@ html = f"""
         </p>
 
         <div class="hero-badges">
-          <!-- <div class="hero-badge">🏢 {COMPANY_NAME}</div> -->
-          <!-- <div class="hero-badge">👤 {MLO_NAME}</div> -->
           <div class="hero-badge">📋 {NMLS_ID}</div>
           <div class="hero-badge">📍 {FL_LICENSE}</div>
         </div>
@@ -762,9 +726,9 @@ html = f"""
         <div class="pill-row">
           <div class="pill-stack">
             <div class="pill-label">Down Payment</div>
-            <div class="blue-pill" id="downPaymentDollars"></div>
+            <div class="blue-pill" id="downPaymentDollars">$0</div>
           </div>
-          <div class="white-pill" id="downPaymentPercent"></div>
+          <div class="white-pill" id="downPaymentPercent">0%</div>
         </div>
 
         <input
@@ -778,7 +742,7 @@ html = f"""
 
         <div class="payment-card">
           <div class="payment-title">Estimated Monthly Payment</div>
-          <div class="big-payment" id="monthlyPayment"></div>
+          <div class="big-payment" id="monthlyPayment">$0</div>
           <div class="subtle">principal + interest</div>
         </div>
       </div>
@@ -914,12 +878,17 @@ html = f"""
   ];
 
   const loanAmountEl = document.getElementById("loanAmount");
+  const loanTypeEl = document.getElementById("loanType");
   const creditRangeEl = document.getElementById("creditRange");
   const loanTermEl = document.getElementById("loanTerm");
   const downPaymentSliderEl = document.getElementById("downPaymentSlider");
   const downPaymentDollarsEl = document.getElementById("downPaymentDollars");
   const downPaymentPercentEl = document.getElementById("downPaymentPercent");
   const monthlyPaymentEl = document.getElementById("monthlyPayment");
+
+  const targetPriceEl = document.getElementById("targetPrice");
+  const leadFormEl = document.getElementById("leadForm");
+  const formStatusEl = document.getElementById("formStatus");
 
   const currency = new Intl.NumberFormat("en-US", {{
     style: "currency",
@@ -936,7 +905,7 @@ html = f"""
   }}
 
   function parseCurrency(value) {{
-    return Number(String(value).replace(/[^0-9]/g, "")) || 0;
+    return Number(String(value || "").replace(/[^0-9]/g, "")) || 0;
   }}
 
   function formatCurrencyInput(value) {{
@@ -947,6 +916,10 @@ html = f"""
   function calculateMonthlyPayment(principal, annualRate, years) {{
     const monthlyRate = annualRate / 100 / 12;
     const numberOfPayments = years * 12;
+
+    if (!principal || !years || numberOfPayments <= 0) {{
+      return 0;
+    }}
 
     if (monthlyRate === 0) {{
       return principal / numberOfPayments;
@@ -959,20 +932,63 @@ html = f"""
     );
   }}
 
+  function makeCurrencyInput(inputEl, onValueChange) {{
+    if (!inputEl) {{
+      return;
+    }}
+
+    inputEl.addEventListener("input", () => {{
+      inputEl.value = inputEl.value.replace(/[^0-9]/g, "");
+
+      if (typeof onValueChange === "function") {{
+        onValueChange();
+      }}
+    }});
+
+    inputEl.addEventListener("focus", () => {{
+      const numericValue = parseCurrency(inputEl.value);
+      inputEl.value = numericValue ? String(numericValue) : "";
+    }});
+
+    inputEl.addEventListener("blur", () => {{
+      inputEl.value = formatCurrencyInput(inputEl.value);
+
+      if (typeof onValueChange === "function") {{
+        onValueChange();
+      }}
+    }});
+
+    inputEl.addEventListener("keydown", (event) => {{
+      if (event.key === "Escape" || event.key === "Enter") {{
+        inputEl.blur();
+      }}
+    }});
+  }}
+
   function updateCalculator() {{
-    const loanAmount = parseCurrency(loanAmountEl.value);
-    const creditRange = creditRangeEl.value;
-    const loanTerm = Number(loanTermEl.value);
-    const downPaymentPct = Number(downPaymentSliderEl.value);
+    const loanAmount = parseCurrency(loanAmountEl?.value);
+    const creditRange = creditRangeEl?.value || "760+";
+    const loanTerm = Number(loanTermEl?.value) || 30;
+    const downPaymentPct = Number(downPaymentSliderEl?.value) || 0;
+
+    const termRates = rateMap[String(loanTerm)] || {{}};
+    const annualRate = Number(termRates[creditRange]) || 0;
 
     const downPayment = loanAmount * downPaymentPct / 100;
-    const principal = loanAmount - downPayment;
-    const annualRate = rateMap[String(loanTerm)][creditRange];
+    const principal = Math.max(loanAmount - downPayment, 0);
     const payment = calculateMonthlyPayment(principal, annualRate, loanTerm);
 
-    downPaymentDollarsEl.textContent = currency.format(downPayment);
-    downPaymentPercentEl.textContent = `${{downPaymentPct}}%`;
-    monthlyPaymentEl.textContent = currency.format(payment);
+    if (downPaymentDollarsEl) {{
+      downPaymentDollarsEl.textContent = currency.format(downPayment);
+    }}
+
+    if (downPaymentPercentEl) {{
+      downPaymentPercentEl.textContent = `${{downPaymentPct}}%`;
+    }}
+
+    if (monthlyPaymentEl) {{
+      monthlyPaymentEl.textContent = currency.format(payment);
+    }}
   }}
 
   function findStreamlitScroller() {{
@@ -1029,6 +1045,17 @@ html = f"""
     }}
 
     const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    const maxScrollTop = scroller.scrollHeight - scroller.clientHeight;
+    const lastPageTop = (pages.length - 1) * viewportHeight;
+
+    if (scroller.scrollTop >= lastPageTop) {{
+      return;
+    }}
+
+    if (maxScrollTop - scroller.scrollTop < 24) {{
+      return;
+    }}
+
     const targetIndex = Math.max(
       0,
       Math.min(
@@ -1056,7 +1083,7 @@ html = f"""
 
     scroller.addEventListener("scroll", () => {{
       window.clearTimeout(snapTimer);
-      snapTimer = window.setTimeout(snapToNearestPage, 90);
+      snapTimer = window.setTimeout(snapToNearestPage, 180);
     }}, {{ passive: true }});
   }}
 
@@ -1065,40 +1092,52 @@ html = f"""
     installSnapFallback();
   }}
 
-  loanAmountEl.addEventListener("input", () => {{
-    loanAmountEl.value = loanAmountEl.value.replace(/[^0-9]/g, "");
-    updateCalculator();
-  }});
+  function installCalculatorEvents() {{
+    makeCurrencyInput(loanAmountEl, updateCalculator);
+    makeCurrencyInput(targetPriceEl);
 
-  loanAmountEl.addEventListener("focus", () => {{
-    const numericValue = parseCurrency(loanAmountEl.value);
-    loanAmountEl.value = numericValue ? String(numericValue) : "";
-  }});
+    [creditRangeEl, loanTypeEl, loanTermEl, downPaymentSliderEl].forEach((element) => {{
+      if (!element) {{
+        return;
+      }}
 
-  loanAmountEl.addEventListener("blur", () => {{
-    loanAmountEl.value = formatCurrencyInput(loanAmountEl.value);
-    updateCalculator();
-  }});
+      element.addEventListener("input", updateCalculator);
+      element.addEventListener("change", updateCalculator);
+    }});
+  }}
 
-  loanAmountEl.addEventListener("keydown", (event) => {{
-    if (event.key === "Escape" || event.key === "Enter") {{
-      loanAmountEl.blur();
+  function installLeadFormEvents() {{
+    if (!leadFormEl) {{
+      return;
     }}
-  }});
 
-  [creditRangeEl, loanTermEl, downPaymentSliderEl].forEach((element) => {{
-    element.addEventListener("input", updateCalculator);
-    element.addEventListener("change", updateCalculator);
-  }});
+    leadFormEl.addEventListener("submit", (event) => {{
+      event.preventDefault();
 
-  updateCalculator();
-  refreshStreamlitLayout();
+      if (formStatusEl) {{
+        formStatusEl.textContent = "Thanks — your request is ready to be connected to a submission endpoint.";
+      }}
+    }});
+  }}
 
-  [250, 1000].forEach((delay) => {{
-    window.setTimeout(refreshStreamlitLayout, delay);
-  }});
+  function initializeApp() {{
+    installCalculatorEvents();
+    installLeadFormEvents();
 
-  window.addEventListener("resize", refreshStreamlitLayout);
+    updateCalculator();
+    refreshStreamlitLayout();
+
+    [250, 1000].forEach((delay) => {{
+      window.setTimeout(refreshStreamlitLayout, delay);
+    }});
+
+    window.addEventListener("resize", () => {{
+      refreshStreamlitLayout();
+      updateCalculator();
+    }});
+  }}
+
+  initializeApp();
 </script>
 """
 
