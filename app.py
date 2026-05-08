@@ -466,20 +466,6 @@ st.markdown(
         padding: 1.1rem;
       }
 
-      .section-kicker {
-        display: inline-flex;
-        width: fit-content;
-        margin-bottom: 0.75rem;
-        padding: 0.42rem 0.68rem;
-        border-radius: 999px;
-        background: rgba(255,255,255,0.14);
-        color: rgba(255,255,255,0.84);
-        font-size: 0.68rem;
-        font-weight: 850;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-
       .contact-title {
         margin: 0;
         max-width: 11ch;
@@ -754,8 +740,6 @@ html = f"""
   <section class="snap-page">
     <div class="phone-width">
       <div class="contact-card">
-        <div class="section-kicker">Consultation request</div>
-
         <h2 class="contact-title">Request a mortgage consultation.</h2>
 
         <p class="contact-copy">
