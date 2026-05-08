@@ -72,10 +72,10 @@ st.markdown(
       :root {
         --app-bg:
           radial-gradient(
-            ellipse 90% 100% at 80% 10%,
-            rgba(65, 105, 225, 0.35) 0%,
-            rgba(41, 72, 219, 0.22) 35%,
-            rgba(20, 40, 150, 0.08) 65%,
+            ellipse 80% 90% at 80% 10%,
+            rgba(65, 105, 225, 0.6) 0%,
+            rgba(41, 72, 219, 0.4) 35%,
+            rgba(20, 40, 150, 0.15) 85%,
             rgba(5, 5, 30, 0) 100%
           ),
           linear-gradient(
